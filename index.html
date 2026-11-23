@@ -16,7 +16,8 @@
 <style>
 /* 기본 리셋 (이전 Claude 뷰어가 넣어 주던 것) */
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: hidden; }
+@supports (overflow: clip) { html { overflow-x: clip; } }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 </style>
@@ -62,6 +63,7 @@ button { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--hl); outline-offset: 3px; }
 
 .wrap {
+  grid-template-columns: minmax(0, 1fr);
   max-width: 1180px; margin: 0 auto;
   padding-block: 28px 64px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -93,7 +95,7 @@ h1 {
   box-shadow: 4px 4px 0 var(--ink); padding: 8px 18px;
 }
 .search input {
-  flex: 1; min-width: 0; border: 0; background: none; outline: none;
+  flex: 1; min-width: 0; width: 100%; border: 0; background: none; outline: none;
   font: inherit; font-size: 16px; color: var(--ink);
 }
 .search:focus-within { box-shadow: 4px 4px 0 var(--hl), 4px 4px 0 3px var(--ink); }

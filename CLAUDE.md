@@ -47,7 +47,36 @@
 - 고치기 전에 문제와 대안을 먼저 보여주고 함께 정한 뒤 수정한다.
 - 선택지는 팝업 질문 창보다 글로 정리해서 묻는다.
 
+## 참고한 [윤윤] 학습지 (Canva 디자인 id)
+2026-11-23에 아래 학습지와 사이트를 비교해서 A그룹(분명한 차이)과 B그룹(학습지끼리 다른 것, 위 기준에 결정 반영)을 고쳤다. 학습지가 바뀌면 해당 카드만 다시 비교한다.
+- 오프닝·NT: 1NT 자연 응답·Stayman `DAHbU1QISwc` · 1NT Transfer·Texas·Smolen·마이너 Transfer `DAHbU6p-9no` · 2NT 오프닝 `DAHbQSUW6SA` · Strong 2♣·Waiting·Second Negative·Kokish `DAHbJpg7Ti8` · Weak Two·Ogust·Feature Ask `DAHbQXTxZms` · Preempt `DAHbbRV5zZ4`
+- 응답·레이즈: SAYC 1수트 오픈 뒤 자연 응답 `DAHbbqEDwIk` · 1레벨 오픈과 응답 복습 `DAHT_wNH8D4` · 메이저 Raise `DAHboJ7NfEA` · Bergen·Jacoby·Splinter `DAHboIfI-2k` · Passed-hand·Drury `DAHboHjGkGU` · 마이너 Raise·Inverted `DAHbpIiFRg0`
+- 리비드·2/1: 오프너 리비드 `DAHbbihuOsc` · 응답자 리비드 `DAHbjJgD0-8` · Reverse·Jump Shift·Ingberman `DAHbplLIvY4` · 2/1 첫 응답 `DAHbjlUpLG4` · 2/1 이후 `DAHbjhZ6PI8` · SAYC·2/1 실전 비교 `DAHbpsu77Os` · Game Try·Partscore `DAHboPO--ZY`
+- 경쟁·확장·평가: 상대 1NT 방어 `DAHawcz2QDQ`(사본 여럿 중 최신) · 오버콜 통합 03 `DAHad__Mmyo` · 3차시 Overcall과 Advancer `DAHbjNyHY5U` · BART·Wolff `DAHbpZCC6qA` · Gazzilli·Transfer Walsh `DAHbpjIAuQA` · 핸드 평가 `DAHbOuB32Po`
+- 비딩 기준이 아니라 제외: 미니브리지, 풍속도 수업자료, BRIDGE CLASS 플레이 실습.
+
 ## 남은 일
-- C그룹: 학습지에 있지만 사이트에 없는 기준 추가 (2NT 오픈 뒤 슬램 기준, support points 계산법, Jacoby 2NT 답 순서, Rule of 17·2-3-4, 1♦ 레이즈, 2/1 세부, 내 핸드로 찾기의 6장 마이너·5–5 메이저·♠5♥4 초대 처리 등).
+### C그룹: 학습지에 있지만 사이트에 없는 기준 (추가 후보)
+- 메이저 오프닝: 1M–3NT = 15–17 밸런스·2장 지지(선택), 직접 4M은 5장 이상 지지 + 짧은 수트(13+는 4M 안 씀), 새 수트 순서(긴 수트 먼저, 4–4는 싼 수트, 5–5는 높은 수트).
+- 레이즈: support points 3–2–1(보이드 3·싱글톤 2·더블톤 1, 5–3–1은 선택). 4-3-3-3·9 이하면 Bergen 대신 2M 가능. Bergen은 1·2번째 자리·비경쟁·unpassed에서만. Jacoby 2NT 답 순서는 좋은 5장 사이드 → shortness → 강도. Passed hand는 Jacoby 2NT 대신 Drury.
+- Drury 세부: 2♦* 뒤 응답자 2M 최저 NF / 3M 상한 INV / 4M, 경쟁 중 off, passed hand 1NT 6–11 NF. Two-way: 2♣* = 정확히 3장 10–11, 2♦* = 4장 이상 9–11.
+- 마이너: 1♦ 레이즈(♦4장이면 2♦ 6–9 / 3♦ 10–12), 2♣ 레이즈는 ♣5장. Inverted는 X·오버콜 뒤 off, passed hand에서 on, 2NT·3m에서 멈출 수 있음.
+- 1NT 뒤: SAYC 2♠* 마이너 사인오프와 3♣/3♦ 직접 초대. Stayman 2♥ 뒤 응답자가 ♠4장만 있으면 NT로 후속. Jacoby ♥ 트랜스퍼 뒤 2♠ = ♥5·♠4 8–9 INV(선택). Texas 대신 약한 슬램 관심이면 Jacoby 뒤 4M.
+- 2NT 오픈 뒤: 13–15 → 6NT, 16 → 5NT, 17+ → 7NT. 5–4는 Stayman 뒤 Smolen, 5–5는 트랜스퍼 뒤 다른 메이저 GF. 2NT 뒤 Quantitative 4NT = 11–12, 5NT = 16.
+- Strong 2♣: Positive 수트 질(5장 AKQ 중 2장 / 6장 AKQJ10 중 3장), 2♣–2♦–2NT 뒤 응답자 0–1 패스 / 3+ 3NT / 9–10 4NT / 11–12 6NT. 오프너 3♣ 리비드 뒤 Second Negative는 3♦.
+- Weak Two·Preempt: Rule of 17, 4번째 자리 위크 투 ≈ 10–14, Rule of 2·3·4, 다른 4장 메이저가 있으면 Preempt 피하기.
+- 2/1 세부: 1♠–2♥는 ♥5장 이상, 3레벨 새 수트 4장+·보통 14+, 3M 점프 반복 6장+·15+, 4♣·4♦는 게임 아님. 1NT 포싱 뒤 응답자 2NT/3♣ = 10–11 INV, 3M 점프 = 좋은 6장 INV.
+- Reverse 세부: 응답자 3♠ 점프 = 6장·8+, 1NT 응답 뒤 높은 새 수트도 Reverse, 2/1 GF 뒤의 높은 새 수트는 Reverse 점수 불필요.
+- 경쟁: 1NT 방어 공통 길이(한 수트 6장, 두 수트 5–4), Meckwell X–2♣ 뒤 답(패스 ♣ / 2♦ ♦ / 2♥ 양 메이저), Multi-Landy 2NT = 두 마이너 5–5, 어드밴서의 Fit-showing Jump, 오버콜 뒤 어드밴서 새 수트는 NF, 상대 위크 투 뒤 2NT = 강한 밸런스 + 스토퍼.
+- 핸드 평가: 장수점수(5장 +1 · 6장 +2 · 7장 +3), 지지점수, 짧은 수트 아너 감점, 퀵트릭 AKQ = 2.
+- 내 핸드로 찾기: 6장 마이너(SAYC 2♠* 사인오프, 8–9는 3m 직접 초대), 5–5 메이저(초대는 ♥ 트랜스퍼 뒤 2♠, 게임은 ♠ 트랜스퍼 뒤 3♥), ♠5·♥4 초대(Stayman 뒤 2♠), 슬램 관심 있는 6장 메이저.
+
+### 그 밖에
 - 학습지가 아직 없는 카드: NMF·XYZ·Checkback, Serious 3NT, LTC, Rule of 20.
-- 그 밖의 개선 후보: 같은 비드 카드 구분(이름 크게), 알아두면/심화 구역 접기, 분류 이름 정리, 검색 정확도.
+- 개선 후보: 같은 비드 카드 구분(이름 크게), 알아두면/심화 구역 접기, 분류 이름 정리("상대 오프닝에 개입" vs "상대가 개입했을 때"), 검색 정확도(비드·이름 일치 우선), 표의 빈 점수 칸 처리.
+
+## 새 PC로 옮길 때
+1. Claude 데스크톱 앱 설치, 같은 계정으로 로그인.
+2. "GitHub의 yomybomy/tokbidding을 문서 폴더에 내려받고, CLAUDE.md를 먼저 읽은 다음 이어서 하자"라고 요청.
+3. Git·GitHub CLI 설치(winget `Git.Git`, `GitHub.cli`), `gh auth login --web`으로 로그인.
+4. 학습지 비교가 필요하면 Canva 연결 확인.
