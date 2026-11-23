@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>톡톡 비딩</title>
+<meta name="description" content="헷갈릴 때 바로 누르는 브리지 비딩 카드">
+<meta name="theme-color" content="#fffdf5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="톡톡 비딩">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+/* 기본 리셋 (이전 Claude 뷰어가 넣어 주던 것) */
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { -webkit-text-size-adjust: 100%; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: sticker cards on a score-pad sheet; card grid left, hand finder right (tabs on phones) */
+:root {
+  --paper: #fffdf5;
+  --sheet-line: rgba(38, 52, 120, .07);
+  --ink: #232f6b;
+  --muted: #5d6590;
+  --card: #ffffff;
+  --hl: #ffd84a;
+  --hl-soft: #fff3c4;
+  --on-hl: #232f6b;
+  --red: #dc343b;
+  --x-bg: #dc343b;
+  --x-fg: #ffffff;
+  --row: #f4f5fb;
+  --f-display: "Jua", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --f-body: "Gowun Dodum", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --f-suit: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", sans-serif;
+  /* 밝은 점수표 한 가지 테마로 고정: 기기 다크 모드여도 밝게 보여요 */
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent calc(50% - 1px), var(--sheet-line) calc(50% - 1px), var(--sheet-line) calc(50% + 1px), transparent calc(50% + 1px)),
+    repeating-linear-gradient(180deg, transparent 0 31px, var(--sheet-line) 31px 32px);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.r { color: var(--red); }
+.s { font-family: var(--f-suit); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--hl); outline-offset: 3px; }
+
+.wrap {
+  max-width: 1180px; margin: 0 auto;
+  padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 22px;
+}
+header { display: grid; gap: 14px; }
+h1 {
+  margin: 0; font-family: var(--f-display); font-weight: 400;
+  font-size: clamp(32px, 6vw, 48px); line-height: 1.1; text-wrap: balance;
+}
+.title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.stamp {
+  font-family: var(--f-display); font-size: 15px; line-height: 1;
+  background: var(--hl); color: var(--on-hl);
+  border: 2.5px solid var(--ink); border-radius: 999px; padding: 6px 12px;
+  box-shadow: 3px 3px 0 var(--ink); transform: rotate(-4deg);
+}
+.sign { margin: 0; text-align: center; font-family: var(--f-display); font-size: 15px; color: var(--muted); }
+.hl {
+  background: linear-gradient(transparent 55%, var(--hl) 55%, var(--hl) 92%, transparent 92%);
+  padding: 0 4px;
+}
+.sub { margin: 0; color: var(--muted); }
+
+.search {
+  display: flex; align-items: center; gap: 10px; max-width: 560px;
+  background: var(--card); border: 3px solid var(--ink); border-radius: 999px;
+  box-shadow: 4px 4px 0 var(--ink); padding: 8px 18px;
+}
+.search input {
+  flex: 1; min-width: 0; border: 0; background: none; outline: none;
+  font: inherit; font-size: 16px; color: var(--ink);
+}
+.search:focus-within { box-shadow: 4px 4px 0 var(--hl), 4px 4px 0 3px var(--ink); }
+
+.pills { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pills .lab { font-family: var(--f-display); font-size: 14px; color: var(--muted); margin-right: 2px; }
+.pill {
+  border: 2.5px solid var(--ink); background: var(--card); border-radius: 999px;
+  padding: 4px 14px; cursor: pointer; font-family: var(--f-display); font-size: 15px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.pill[aria-pressed="true"] { background: var(--hl); color: var(--on-hl); }
+.pill:active { transform: translate(2px, 2px); box-shadow: none; }
+
+.tabs { display: none; gap: 8px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+
+.tier-sec { display: grid; gap: 22px; }
+.tier-sec + .tier-sec { margin-top: 44px; padding-top: 28px; border-top: 3px dashed var(--muted); }
+.tier-head { display: grid; gap: 2px; }
+.tier-head h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 28px; line-height: 1.2; }
+.tier-head p { margin: 0; font-size: 14px; color: var(--muted); }
+.group { display: grid; gap: 12px; }
+.group h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 19px; }
+.group h3 small { font-family: var(--f-body); font-size: 13px; color: var(--muted); margin-left: 6px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 14px; }
+
+.bid {
+  position: relative;
+  display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: center;
+  min-height: 116px; padding: 16px 8px 10px; cursor: pointer;
+  background: var(--card); border: 3px solid var(--ink); border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: transform .08s ease, box-shadow .08s ease;
+  text-align: center;
+}
+.bid:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+.bid:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+.bid .face { font-family: var(--f-display); font-size: 34px; line-height: 1; }
+.bid .face.long { font-size: 24px; }
+.bid .name { font-size: 13px; color: var(--muted); line-height: 1.3; }
+.empty { color: var(--muted); }
+
+/* hand finder */
+.finder {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px);
+  background: var(--card); border: 3px solid var(--ink); border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink); padding: 18px; display: grid; gap: 14px;
+}
+.finder h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 22px; }
+.modes { display: flex; gap: 8px; flex-wrap: wrap; }
+.field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+.field label { font-family: var(--f-display); font-size: 17px; }
+.step { display: flex; align-items: center; gap: 6px; }
+.step button {
+  width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--ink);
+  background: var(--paper); cursor: pointer; font-family: var(--f-display); font-size: 18px; line-height: 1;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.step button:active { transform: translate(2px, 2px); box-shadow: none; }
+.step input {
+  width: 48px; text-align: center; font-family: var(--f-display); font-size: 20px;
+  border: 0; border-bottom: 2.5px solid var(--ink); background: none; color: var(--ink);
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield;
+}
+.step input::-webkit-inner-spin-button, .step input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.sum { font-size: 13px; color: var(--muted); margin: 0; }
+.sum.warn { color: var(--red); }
+.answer {
+  background: var(--hl-soft); border: 2.5px dashed var(--ink); border-radius: 14px;
+  padding: 14px; display: grid; gap: 6px;
+}
+.answer .call { font-family: var(--f-display); font-size: 36px; line-height: 1.1; }
+.answer p { margin: 0; }
+.answer .go {
+  justify-self: start; margin-top: 4px; border: 2.5px solid var(--ink); background: var(--hl); color: var(--on-hl);
+  border-radius: 999px; padding: 3px 14px; cursor: pointer; font-family: var(--f-display);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+/* detail dialog */
+dialog {
+  width: min(720px, calc(100% - 32px)); max-height: calc(100% - 48px); padding: 0;
+  border: 3px solid var(--ink); border-radius: 20px; background: var(--card); color: var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+dialog::backdrop { background: rgba(20, 26, 60, .45); }
+.dlg { padding: 22px 22px 24px; display: grid; gap: 16px; }
+.dlg-head { display: flex; align-items: flex-start; gap: 12px; }
+.dlg-t { flex: 1; min-width: 0; display: grid; gap: 4px; justify-items: start; }
+.dlg-t h3 { word-break: keep-all; }
+.dlg-t .seg { margin-top: 2px; }
+.dlg-t .seg .pill { font-size: 13px; padding: 1px 10px; box-shadow: 2px 2px 0 var(--ink); }
+.when .ex { display: block; margin-top: 8px; font-size: 18px; }
+.when .ex small { font-size: 13px; }
+.dlg-head .face {
+  font-family: var(--f-display); font-size: 26px; min-width: 64px; text-align: center; white-space: nowrap;
+  border: 3px solid var(--ink); border-radius: 12px; padding: 4px 10px; box-shadow: 3px 3px 0 var(--ink);
+}
+.dlg-head h3 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 24px; line-height: 1.2; flex: 1; min-width: 0; }
+.dlg-head .cat { display: block; font-family: var(--f-body); font-size: 13px; color: var(--muted); }
+.close {
+  width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--paper);
+  cursor: pointer; font-family: var(--f-display); font-size: 20px; flex: none; box-shadow: 2px 2px 0 var(--ink);
+}
+.when { margin: 0; background: var(--hl-soft); border: 2.5px solid var(--ink); border-radius: 12px; padding: 12px 14px; }
+.when b { font-family: var(--f-display); font-weight: 400; margin-right: 6px; }
+.auction { margin: 0; font-family: var(--f-display); font-size: 20px; }
+.auction small { font-family: var(--f-body); font-size: 13px; color: var(--muted); margin-right: 8px; }
+.auction mark { background: var(--hl); color: var(--on-hl); border-radius: 6px; padding: 0 6px; }
+.auction mark .r { color: #c22a31; }
+.tbl-title { margin: 0; font-family: var(--f-display); font-size: 17px; }
+.tbl { overflow-x: auto; border: 2.5px solid var(--ink); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; min-width: 460px; }
+th, td { padding: 9px 12px; text-align: left; vertical-align: middle; }
+thead th { font-family: var(--f-display); font-weight: 400; font-size: 14px; background: var(--ink); color: var(--paper); }
+tbody tr:nth-child(even) td { background: var(--row); }
+tbody tr.sec td { background: var(--hl-soft); font-family: var(--f-display); font-size: 14px; padding: 5px 12px; }
+td.pts { white-space: nowrap; font-variant-numeric: tabular-nums; font-family: var(--f-display); }
+td.call { white-space: nowrap; }
+.chip {
+  display: inline-block; font-family: var(--f-display); font-size: 17px; min-width: 52px; text-align: center;
+  border: 2px solid var(--ink); border-radius: 8px; padding: 0 8px; background: var(--card);
+}
+td.cond { font-family: var(--f-display); font-size: 17px; line-height: 1.35; color: var(--ink); }
+td.cond .s { font-size: 1.1em; }
+td.note { color: var(--muted); font-size: 13px; }
+.check { margin: 0; font-size: 13px; color: var(--muted); }
+.rel { display: grid; gap: 10px; border-top: 2.5px dashed var(--muted); padding-top: 14px; }
+.rel-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.rel-btn {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  border: 2.5px solid var(--ink); background: var(--paper); border-radius: 999px;
+  padding: 4px 14px 4px 6px; font-size: 14px; box-shadow: 2px 2px 0 var(--ink);
+}
+.rel-btn .rf {
+  font-family: var(--f-display); font-size: 14px; background: var(--card);
+  border: 2px solid var(--ink); border-radius: 999px; padding: 0 8px; white-space: nowrap;
+}
+.rel-btn:hover { background: var(--hl-soft); }
+.rel-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+.bar { display: grid; gap: 12px; }
+.search-row { display: flex; align-items: center; gap: 10px; }
+.search-row .search { flex: 1; min-width: 0; }
+.filters { display: grid; gap: 12px; }
+.filter-btn { display: none; flex: none; align-items: center; gap: 4px; }
+.filter-btn.on { background: var(--hl); color: var(--on-hl); }
+.filter-btn .caret { font-size: 12px; transition: transform .15s ease; }
+.bar.open .filter-btn .caret { transform: rotate(180deg); }
+.sysbox {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+  border: 2.5px dashed var(--ink); border-radius: 12px; padding: 8px 12px; font-size: 14px;
+}
+.sysbox b { font-family: var(--f-display); font-weight: 400; }
+.seg { display: flex; gap: 6px; }
+.seg .pill { font-size: 14px; padding: 2px 12px; }
+.foot { margin: 0; font-size: 13px; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .tabs { display: flex; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .finder { position: static; }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 10; background: var(--paper);
+  }
+  .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--paper); padding-block: 10px; gap: 10px;
+    border-bottom: 2.5px solid var(--ink);
+  }
+  .bar .pills { flex-wrap: nowrap; overflow-x: auto; padding: 2px 4px 6px 2px; scrollbar-width: none; }
+  .bar .pills::-webkit-scrollbar { display: none; }
+  .bar .pill { flex: none; }
+  .search { box-shadow: 3px 3px 0 var(--ink); padding: 6px 16px; }
+  .filter-btn { display: inline-flex; padding: 8px 14px; }
+  .filters { display: none; }
+  .bar.open .filters { display: grid; gap: 10px; }
+  body[data-tab="finder"] .bar .search-row, body[data-tab="finder"] .bar .filters { display: none; }
+  body[data-tab="cards"] .finder { display: none; }
+  body[data-tab="finder"] .cards-area { display: none; }
+}
+/* 휴대폰: 표 한 줄을 작은 카드 하나로. 비드가 맨 위에 크게 */
+@media (max-width: 600px) {
+  .dlg { padding: 18px 16px 20px; gap: 14px; }
+  .dlg-head .face { font-size: 20px; min-width: 52px; padding: 3px 8px; }
+  .dlg-head h3 { font-size: 21px; }
+  .close { width: 36px; height: 36px; font-size: 18px; }
+  .tbl { border: 0; border-radius: 0; overflow: visible; }
+  .tbl table, .tbl tbody, .tbl tr, .tbl td { display: block; }
+  .tbl table { min-width: 0; }
+  .tbl thead { display: none; }
+  .tbl tbody { display: grid; gap: 10px; }
+  .tbl tbody tr {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px;
+    background: var(--card); border: 2.5px solid var(--ink); border-radius: 12px;
+    box-shadow: 3px 3px 0 var(--ink); padding: 10px 12px;
+  }
+  .tbl tbody tr td, .tbl tbody tr:nth-child(even) td { background: none; padding: 0; }
+  .tbl td:empty { display: none; }
+  .tbl td.call { order: -1; flex-basis: 100%; margin-bottom: 2px; white-space: normal; }
+  .tbl td.call .chip { font-size: 20px; padding: 1px 10px; }
+  .tbl td.pts, .tbl td.cond { font-size: 16px; }
+  .tbl table:not(.lab) td.pts:not(:empty) + td.cond:not(:empty)::before { content: "· "; color: var(--muted); }
+  .tbl table.lab td.pts:not(:empty)::before, .tbl table.lab td.cond:not(:empty)::before {
+    content: attr(data-l) " "; font-family: var(--f-body); font-size: 12px; color: var(--muted);
+  }
+  .tbl td.note { flex-basis: 100%; }
+  .tbl tbody tr.sec {
+    display: block; background: none; border: 0; box-shadow: none; padding: 6px 2px 0;
+  }
+  .tbl tbody tr.sec td { background: none; padding: 0; font-size: 15px; color: var(--ink); }
+}
+@media (max-width: 420px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .bid, .pill, .step button { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="title-row"><h1>톡톡 <span class="hl">비딩</span></h1><span class="stamp">yoon의 비딩 노트</span></div>
+    <p class="sub">헷갈릴 때 바로 누르는 비딩 카드. SAYC 기준이고, 시스템 버튼으로 2/1 GF 기준으로 바꿔 볼 수 있어요.</p>
+  </header>
+  <div class="bar" id="bar">
+    <div class="search-row">
+      <label class="search" for="q">
+        <span aria-hidden="true">🔍</span>
+        <input id="q" type="search" placeholder="NMF, 스테이맨, Lebensohl, Drury…" autocomplete="off">
+      </label>
+      <button class="pill filter-btn" id="filter-btn" aria-expanded="false" aria-controls="filters">필터<span id="filter-count"></span> <span class="caret" aria-hidden="true">▾</span></button>
+    </div>
+    <div class="filters" id="filters">
+      <div class="pills" id="cats" role="group" aria-label="분류"></div>
+      <div class="pills" id="tiers" role="group" aria-label="자주 쓰는 정도"><span class="lab">보기</span></div>
+      <div class="pills" id="sys" role="group" aria-label="비딩 시스템"><span class="lab">시스템</span></div>
+    </div>
+    <div class="tabs" role="group" aria-label="화면">
+      <button class="pill" id="tab-cards" aria-pressed="true">비딩 카드</button>
+      <button class="pill" id="tab-finder" aria-pressed="false">내 핸드로 찾기</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <main class="cards-area" id="cards"></main>
+
+    <aside class="finder" aria-label="내 핸드로 찾기">
+      <h2>내 핸드로 찾기</h2>
+      <div class="modes" role="group" aria-label="상황">
+        <button class="pill" id="mode-open" aria-pressed="true">내가 오프닝</button>
+        <button class="pill" id="mode-1nt" aria-pressed="false">파트너 1NT 후</button>
+      </div>
+      <div class="field"><label for="hcp">점수 (HCP)</label><div class="step"><button data-t="hcp" data-d="-1" aria-label="점수 줄이기">−</button><input id="hcp" type="number" min="0" max="37" value="13"><button data-t="hcp" data-d="1" aria-label="점수 늘리기">+</button></div></div>
+      <div class="field"><label for="ls"><span class="s">♠</span> 장수</label><div class="step"><button data-t="ls" data-d="-1" aria-label="스페이드 줄이기">−</button><input id="ls" type="number" min="0" max="13" value="3"><button data-t="ls" data-d="1" aria-label="스페이드 늘리기">+</button></div></div>
+      <div class="field"><label for="lh"><span class="s r">♥</span> 장수</label><div class="step"><button data-t="lh" data-d="-1" aria-label="하트 줄이기">−</button><input id="lh" type="number" min="0" max="13" value="5"><button data-t="lh" data-d="1" aria-label="하트 늘리기">+</button></div></div>
+      <div class="field"><label for="ld"><span class="s r">♦</span> 장수</label><div class="step"><button data-t="ld" data-d="-1" aria-label="다이아몬드 줄이기">−</button><input id="ld" type="number" min="0" max="13" value="3"><button data-t="ld" data-d="1" aria-label="다이아몬드 늘리기">+</button></div></div>
+      <div class="field"><label for="lc"><span class="s">♣</span> 장수</label><div class="step"><button data-t="lc" data-d="-1" aria-label="클럽 줄이기">−</button><input id="lc" type="number" min="0" max="13" value="2"><button data-t="lc" data-d="1" aria-label="클럽 늘리기">+</button></div></div>
+      <p class="sum" id="sum"></p>
+      <div class="answer" id="answer" aria-live="polite"></div>
+    </aside>
+  </div>
+
+  <p class="foot">일반적인 SAYC 기준이에요. 선택 컨벤션은 방식이 여러 가지라 대표 형태로 적었어요. 파트너와 정한 약속이 다르면 약속을 따르세요.</p>
+  <p class="sign">made by yoon</p>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-title"><div class="dlg" id="dlg-body"></div></dialog>
+
+<script>
+const CATS = [
+  ["open", "오프닝"], ["nt", "NT 이후"], ["resp", "응답 · 레이즈"], ["rebid", "리비드 · 게임 트라이"],
+  ["def", "상대 오프닝에 개입"], ["comp", "상대가 개입했을 때"], ["slam", "슬램"], ["eval", "핸드 평가 · 기준표"]
+];
+const TIERS = { 1: "자주 쓰임", 2: "알아두면 좋음", 3: "선택 심화" };
+const COLS = "점수|장수 · 조건|비드|메모";
+// t: 1 자주 쓰임, 2 알아두면 좋음, 3 선택 심화
+// rows: "점수|조건|비드|메모", "#구분 제목"
+// chk: 방식이 여러 가지라 파트너와 확인이 필요한 카드
+const C = [
+  /* ───────── 오프닝 ───────── */
+  { id: "1major", cat: "open", t: 1, face: "1♥ 1♠", name: "메이저 오프닝",
+    when: "12–21점, 메이저 5장 이상. 5-5면 1♠부터.",
+    auc: "[[1♥]] – 패스 – ?", title: "파트너가 1♥로 열었을 때 내 응답",
+    rows: ["0–5||패스|", "6–9|♥ 3장 이상|2♥|단순 레이즈 (support points)", "10–12|♥ 3장 이상|3♥|리밋 레이즈", "13+|♥ 4장 이상|2NT|제이코비 2NT",
+      "~9|♥ 5장 이상|4♥|Preempt", "6+|♠ 4장 이상|1♠|포싱", "6–10|핏 없음|1NT|비포싱", "10+|새 수트 5장 이상|2♣ / 2♦|1라운드 포싱 (4장이면 NT·레이즈 먼저)"],
+    sys: { gf: { rows: ["0–5||패스|", "6–9|♥ 3장 이상|2♥|단순 레이즈 (support points)", "10–12|♥ 4장 이상|3♥|리밋 레이즈", "10–11|♥ 3장|1NT → 3♥|1NT 포싱 경유",
+      "13+|♥ 4장 이상|2NT|제이코비 2NT", "~9|♥ 5장 이상|4♥|Preempt", "6+|♠ 4장 이상|1♠|포싱", "6–11|핏 없음|1NT|포싱", "12+|새 수트 4장 이상|2♣ / 2♦|게임 포싱 (2/1)"] } } },
+  { id: "1minor", cat: "open", t: 1, face: "1♣ 1♦", name: "마이너 오프닝",
+    when: "12–21점, 5장 메이저가 없을 때. 3-3은 1♣, 4-4는 1♦.",
+    auc: "[[1♣]] – 패스 – ?", title: "파트너가 1♣로 열었을 때 내 응답",
+    rows: ["6+|4장 메이저|1♥ / 1♠|4-4면 1♥ 먼저", "6+|♦ 4장 이상, 메이저 없음|1♦|", "6–10|밸런스, 4장 메이저 없음|1NT|",
+      "11–12|밸런스, 4장 메이저 없음|2NT|초대", "13–15|밸런스, 4장 메이저 없음|3NT|", "6–9|♣ 5장 이상|2♣|", "10–12|♣ 5장 이상|3♣|리밋 레이즈"],
+    sys: { gf: { rows: ["6+|4장 메이저|1♥ / 1♠|4-4면 1♥ 먼저", "6+|♦ 4장 이상, 메이저 없음|1♦|", "6–10|밸런스, 4장 메이저 없음|1NT|",
+      "11–12|밸런스, 4장 메이저 없음|2NT|초대", "13–15|밸런스, 4장 메이저 없음|3NT|", "10+|♣ 5장 이상, 4장 메이저 없음|2♣|인버티드, 포싱", "5–9|♣ 5장 이상|3♣|Preemptive, 비포싱"] } } },
+  { id: "1nt", cat: "open", t: 1, face: "1NT", name: "1NT 오프닝",
+    when: "15–17점, 밸런스 핸드(4-3-3-3 · 4-4-3-2 · 5-3-3-2)로 엽니다.",
+    auc: "[[1NT]]", title: "파트너가 1NT로 열었을 때 내 응답",
+    rows: ["0–7|밸런스|패스|", "0+|5장 이상 메이저|2♦ / 2♥|트랜스퍼", "8+|4장 메이저|2♣|스테이맨", "8–9|4장 메이저 없음|2NT|초대",
+      "10–15|4장 메이저 없음|3NT|", "16–17|밸런스|4NT|6NT 초대", "18–19|밸런스|6NT|"] },
+  { id: "2c", cat: "open", t: 1, face: "2♣", name: "강한 2♣",
+    when: "밸런스 22점 이상, 언밸런스는 21점 이상에 트릭이 충분한 핸드. 인위적이고 포싱이에요.",
+    auc: "[[2♣]] – 패스 – ?", title: "파트너가 2♣로 열었을 때 내 응답",
+    rows: ["0+|좋은 5장 수트 없음|2♦|Waiting, 점수 상한 없음", "8+|좋은 5장 수트|2♥ / 2♠ / 3♣ / 3♦|포지티브", "8+|밸런스|2NT|포지티브",
+      "#오프너 리비드", "22–23|밸런스|2NT|2♦ 응답 뒤", "26–27|밸런스|3NT|24–25는 3NT 오픈", "28+|밸런스|4NT|", "21+|5장 이상 수트|그 수트|포싱",
+      "#상대가 개입하면", "0–3|매우 약함|X|2♣–(수트) 뒤", "4+|Positive가 아님|패스|Forcing Pass, 약하다는 뜻 아님", "|상대가 X하면|기존 응답 그대로|"] },
+  { id: "weak2", cat: "open", t: 1, face: "2♦ 2♥ 2♠", name: "위크 투",
+    when: "5–10점, 좋은 6장 수트. 2♣는 위크 투가 아니에요.",
+    auc: "[[2♥]] – 패스 – ?", title: "파트너가 2♥로 열었을 때 내 응답",
+    rows: ["0–13|핏 없음|패스|", "0–13|♥ 3장 이상|3♥|Preemptive Raise", "14+ (핏) / 16+ (핏 없음)|게임 탐색|2NT|Feature Ask 또는 Ogust", "14+|♥ 3장 이상|4♥|게임", "0–13|♥ 4장 이상|4♥|Preempt",
+      "14+|강한 5장 이상|새 수트|포싱", "#2NT(Feature Ask)에 오프너", "5–7|최소|3♥|자기 수트로", "8–10|최대, 사이드 A·K|그 수트|Feature 표시"] },
+  { id: "2nt", cat: "open", t: 1, face: "2NT", name: "2NT 오프닝",
+    when: "20–21점, 밸런스 핸드.",
+    auc: "[[2NT]] – 패스 – ?", title: "파트너가 2NT로 열었을 때 내 응답",
+    rows: ["0–3||패스|", "4+|4장 메이저|3♣|스테이맨 (또는 퍼펫)", "0+|5장 이상 메이저|3♦ / 3♥|트랜스퍼", "4–10|6장 메이저|3♦ / 3♥ → 4M|트랜스퍼 뒤 게임 (Texas는 선택)",
+      "4–10|4장 메이저 없음|3NT|", "11–12|밸런스|4NT|6NT 초대", "#강한 밸런스 범위", "20–21|밸런스|2NT 오픈|", "22–23|밸런스|2♣ → 2NT|", "24–25|밸런스|3NT 오픈|갬블링 3NT와 구분", "26–27|밸런스|2♣ → 3NT|", "28+|밸런스|2♣ → 4NT|"] },
+  { id: "pre3", cat: "open", t: 1, face: "3♠", name: "Preempt (3·4레벨)",
+    when: "4–9점, 좋은 7장이면 3레벨, 8장이면 4레벨(4♣·4♦ 포함). 상대의 비딩 공간을 뺏어요.",
+    auc: "[[3♠]] – 패스 – ?", title: "파트너가 3♠로 열었을 때 내 응답",
+    rows: ["~15|핏 없음|패스|", "~15|♠ 3장 이상|4♠|Preemptive Raise", "16+|♠ 2장 이상|4♠|게임", "16+|나머지 수트 스토퍼|3NT|", "16+|좋은 5장 수트|새 수트|포싱"] },
+  { id: "seat34", cat: "open", t: 2, face: "1♠", name: "3·4번째 자리 오프닝",
+    when: "앞 사람이 모두 패스했을 때는 조금 가볍게 열 수 있어요. 4번째 자리는 Rule of 15.",
+    auc: "패스 – 패스 – [[1♠]]", title: "자리별 오프닝 기준",
+    rows: ["12+|Rule of 20|1·2번째 자리|정상 오프닝", "10–11|좋은 메이저 5장|3번째 자리|라이트 오프닝, 리드 지시", "10–11|HCP + ♠ 장수 ≥ 15|4번째 자리|Rule of 15",
+      "#파트너가 패스드 핸드면", "10+ (support)|3장 이상 서포트|2♣|드루리"] },
+  { id: "ogust", cat: "open", t: 2, face: "Ogust", name: "오구스트",
+    when: "파트너 위크 투에 2NT로 핸드 강도와 수트의 질을 함께 물어요.",
+    auc: "2♠ – [[2NT]]", title: "파트너가 오구스트 2NT를 불렀을 때 오프너", cols: "강도|수트의 질|비드|메모",
+    rows: ["최소|나쁜 수트|3♣|", "최소|좋은 수트|3♦|상위 3장 중 2장", "최대|나쁜 수트|3♥|", "최대|좋은 수트|3♠|", "AKQxxx|솔리드|3NT|"] },
+  { id: "secneg", cat: "open", t: 2, face: "3♣", name: "세컨드 네거티브",
+    when: "2♣–2♦ 뒤 오프너가 메이저를 부르면, 0–3점이면서 K가 없는 응답자는 3♣(Cheaper Minor)로 아주 약하다고 알려요.",
+    auc: "2♣ – 2♦ – 2♥ – [[3♣]]", title: "오프너 2♥ 리비드 뒤 응답자",
+    rows: ["0–3|K 없음|3♣|세컨드 네거티브", "4+|♥ 3장 이상|3♥|", "4+|5장 이상 수트|2♠ / 3♦|게임 포싱", "3+|밸런스, 핏 없음|2NT|K 있는 3점 포함"] },
+  { id: "kokish", cat: "open", t: 3, face: "2♥", name: "코키시 릴레이",
+    when: "2♣–2♦–2♥는 ♥ 핸드 또는 아주 강한 밸런스. 응답자는 2♠로 넘기고, 오프너가 다음에 정체를 밝혀요.",
+    auc: "2♣ – 2♦ – [[2♥]] – 2♠", title: "응답자 2♠ 뒤 오프너", chk: true,
+    rows: ["24+|밸런스|2NT|게임 포싱", "22+|♥ 6장 이상|3♥|", "22+|♥ 5장 + 마이너 4장 이상|3♣ / 3♦|", "22+|♥ + ♠|2♠ 뒤 수트|", "#비교", "22–23|밸런스|2♣–2♦–2NT|코키시 안 씀"] },
+  { id: "multi", cat: "open", t: 3, face: "2♦", name: "멀티 2♦",
+    when: "2♦ 하나로 ♥ 또는 ♠ 위크 투를 보여줘요. 강한 핸드 옵션을 넣기도 해요.",
+    auc: "[[2♦]] – 패스 – ?", title: "파트너가 멀티 2♦를 열었을 때 내 응답", chk: true,
+    rows: ["약함|♥에서 멈춰도 됨|2♥|Pass or Correct", "약함|♠만 괜찮음|2♠|♥면 오프너가 3♥", "15+|게임 탐색|2NT|질문", "약함|양 메이저 서포트|3♥ / 4♥|Pass or Correct"] },
+  { id: "muiderberg", cat: "open", t: 3, face: "2♥ 2♠", name: "무이더베르흐",
+    when: "6–10점, 그 메이저 5장 + 마이너 4장 이상.",
+    auc: "[[2♠]] – 패스 – ?", title: "파트너가 무이더베르흐 2♠를 열었을 때 내 응답", chk: true,
+    rows: ["~11|핏 없음, ♠ 짧음|3♣|Pass or Correct (마이너)", "~11|♠ 3장|3♠|Preempt", "12+|게임 탐색|2NT|마이너와 강도 질문", "14+|♠ 핏|4♠|"] },
+  { id: "wilkosz", cat: "open", t: 3, face: "2♦", name: "윌코시 2♦",
+    when: "6–11점, 메이저 하나 이상을 포함한 5-5 두 수트.",
+    auc: "[[2♦]] – 패스 – ?", title: "파트너가 윌코시 2♦를 열었을 때 내 응답", chk: true,
+    rows: ["약함|♥가 괜찮음|2♥|Pass or Correct", "약함|♠가 괜찮음|2♠|Pass or Correct", "강함|수트·강도 질문|2NT|"] },
+  { id: "flannery", cat: "open", t: 3, face: "2♦", name: "플래너리",
+    when: "11–15점, ♠ 4장 + ♥ 5장.",
+    auc: "[[2♦]] – 패스 – ?", title: "파트너가 플래너리 2♦를 열었을 때 내 응답",
+    rows: ["0–7|♥ Preference|2♥|", "0–7|♠ Preference|2♠|", "8–10|핏|3♥ / 3♠|초대", "11+|핏|4♥ / 4♠|", "11+|분포 질문|2NT|오프너가 나머지 두 수트 분포 표시"] },
+  { id: "gambling", cat: "open", t: 3, face: "3NT", name: "갬블링 3NT",
+    when: "솔리드 7장 마이너(AKQxxxx), 다른 수트엔 거의 아무것도 없을 때. 3NT 오픈을 24–25 밸런스로 쓰면 함께 쓸 수 없어요.",
+    auc: "[[3NT]] – 패스 – ?", title: "파트너가 갬블링 3NT를 열었을 때 내 응답",
+    rows: ["아무|다른 세 수트 스토퍼|패스|", "약함|스토퍼 부족|4♣|Pass or Correct", "약함|Preempt 겸|5♣|Pass or Correct", "강함|싱글톤 질문|4♦|"] },
+  { id: "namyats", cat: "open", t: 3, face: "4♣ 4♦", name: "나미야츠",
+    when: "4♣ = 강한 ♥ Preempt, 4♦ = 강한 ♠ Preempt (8–9 플레잉 트릭). 약한 Preempt는 바로 4♥/4♠.",
+    auc: "[[4♣]] – 패스 – ?", title: "파트너가 나미야츠 4♣를 열었을 때 내 응답",
+    rows: ["슬램 관심 없음||4♥|트랜스퍼 완성", "슬램 관심||4♦|릴레이, 오프너가 더 알려줌", "키카드 확인||4NT|RKCB"] },
+  { id: "weaknt", cat: "open", t: 3, face: "1NT", name: "Weak NT (12–14)",
+    when: "1NT를 12–14점 밸런스로 여는 방식. 응답 구조는 비슷하지만 게임 기준과 탈출이 달라져요.",
+    auc: "[[1NT]] (12–14) – 패스 – ?", title: "파트너가 약한 1NT를 열었을 때 내 응답",
+    rows: ["0–10|밸런스|패스|", "0+|5장 메이저|2♦ / 2♥|트랜스퍼", "11+|4장 메이저|2♣|스테이맨", "11–12|4장 메이저 없음|2NT|초대", "13–18|4장 메이저 없음|3NT|", "#상대가 X하면", "0–7|탈출 필요|1NT 더블 탈출 카드 참고|"] },
+
+  /* ───────── NT 이후 ───────── */
+  { id: "stayman", cat: "nt", t: 1, face: "2♣", name: "스테이맨",
+    when: "파트너 1NT 뒤, 8점 이상에 4장 메이저가 있어 핏을 찾을 때 2♣.",
+    auc: "1NT – [[2♣]]", title: "파트너가 스테이맨 2♣를 불렀을 때 오프너",
+    rows: ["15–17|♥ 4장 이상|2♥|양쪽 4장이어도 ♥ 먼저", "15–17|♠ 4장 이상, ♥ 4장 아님|2♠|5장도 가능", "15–17|4장 메이저 없음|2♦|",
+      "#응답자 다음 비드", "8–9|핏 있음|3♥ / 3♠|초대", "10–15|핏 있음|4♥ / 4♠|", "8–9|핏 없음|2NT|초대", "10–15|핏 없음|3NT|"] },
+  { id: "jacoby", cat: "nt", t: 1, face: "2♦ 2♥", name: "제이코비 트랜스퍼",
+    when: "파트너 1NT 뒤, 5장 이상 메이저가 있으면 점수와 상관없이 그 한 단계 아래 수트를 불러요.",
+    auc: "1NT – [[2♦]]", title: "파트너가 2♦(♥ 트랜스퍼)를 불렀을 때",
+    rows: ["#오프너", "15–17|보통|2♥|트랜스퍼 완성", "17|♥ 4장|3♥|Superaccept", "#응답자 다음 비드", "0–7||패스|", "8–9|♥ 5장|2NT|초대",
+      "8–9|♥ 6장 이상|3♥|초대", "10–15|♥ 5장|3NT|오프너가 고름", "10–15|♥ 6장 이상|4♥|", "10+|♥ 5장 + 새 수트 4장|3♣ / 3♦|게임 포싱"] },
+  { id: "texas", cat: "nt", t: 1, face: "4♦ 4♥", name: "텍사스 트랜스퍼",
+    when: "파트너 1NT 뒤, 6장 이상 메이저에 게임 점수가 있을 때 4♦(→♥) 또는 4♥(→♠).",
+    auc: "1NT – [[4♦]]", title: "파트너가 텍사스 4♦를 불렀을 때 오프너",
+    rows: ["15–17|항상|4♥|4♥에는 4♠", "#응답자 다음 비드", "10–15|슬램 생각 없음|패스|", "16+|슬램 탐색|4NT|RKCB"] },
+  { id: "smolen", cat: "nt", t: 2, face: "3♥ 3♠", name: "스몰렌",
+    when: "5-4 메이저 + 게임 점수. 스테이맨에 2♦가 나오면 4장 메이저를 점프해서 불러 5장 메이저를 보여줘요.",
+    auc: "1NT – 2♣ – 2♦ – [[3♥]]", title: "파트너가 스몰렌 3♥(♠ 5장 + ♥ 4장)를 불렀을 때 오프너",
+    rows: ["15–17|♠ 3장|4♠|오프너가 플레이", "15–17|♠ 2장|3NT|", "#3♠ 스몰렌이면", "15–17|♥ 3장|4♥|", "15–17|♥ 2장|3NT|"] },
+  { id: "garbage", cat: "nt", t: 2, face: "2♣", name: "가비지 스테이맨",
+    when: "0–7점인데 ♣가 짧고 메이저 4-4 같은 모양일 때 2♣를 부르고 어떤 대답이든 패스.",
+    auc: "1NT – [[2♣]] – 2♦ – 패스", title: "약한 손으로 스테이맨을 쓸 때 응답자",
+    rows: ["0–7|4-4-4-1 / 4-4-5-0|2♣ 후 패스|2♦도 패스", "0–7|메이저 4-4|2♣ 후 2♥|크롤링 스테이맨", "0–7|5장 메이저|트랜스퍼|가비지 대신"] },
+  { id: "crawling", cat: "nt", t: 3, face: "2♥", name: "크롤링 스테이맨",
+    when: "약한 4-4 메이저: 스테이맨 뒤 2♦가 나오면 2♥로 '둘 중 고르라'를 알려요.",
+    auc: "1NT – 2♣ – 2♦ – [[2♥]]", title: "응답자 2♥ 뒤 오프너",
+    rows: ["15–17|♥ 3장 이상|패스|", "15–17|♠ 3장, ♥ 2장|2♠|"] },
+  { id: "mintr", cat: "nt", t: 2, face: "2♠ 2NT", name: "마이너 트랜스퍼",
+    when: "1NT 뒤 2♠ = ♣ 트랜스퍼, 2NT = ♦ 트랜스퍼 (4수트 트랜스퍼). 이때 2NT 초대는 스테이맨을 거쳐요.",
+    auc: "1NT – [[2♠]]", title: "파트너가 마이너 트랜스퍼를 불렀을 때 오프너", chk: true,
+    rows: ["#2♠ (♣ 트랜스퍼)", "15–17|보통|3♣|정상 완성", "17|♣ 4장 + 최대|2NT|Superaccept", "#2NT (♦ 트랜스퍼)", "15–17|보통|3♦|정상 완성", "17|♦ 4장 + 최대|3♣|Superaccept (4장 없으면 안 씀)",
+      "#응답자", "0–7|6장 마이너|완성 뒤 패스|", "8–9|밸런스 초대|2♣ 후 2NT|스테이맨 경유"] },
+  { id: "minstay", cat: "nt", t: 3, face: "2♠", name: "마이너 수트 스테이맨",
+    when: "1NT 뒤 2♠로 두 마이너(5-4 이상)를 보여주고 슬램 또는 3NT 선택을 물어요.",
+    auc: "1NT – [[2♠]]", title: "파트너가 마이너 수트 스테이맨을 불렀을 때 오프너", chk: true,
+    rows: ["15–17|♣ 4장 이상|3♣|", "15–17|♦ 4장 이상|3♦|", "15–17|4장 마이너 없음|2NT|"] },
+  { id: "puppet", cat: "nt", t: 2, face: "3♣", name: "퍼펫 스테이맨",
+    when: "2NT(또는 1NT) 뒤 3♣로 4장과 5장 메이저를 함께 찾아요.",
+    auc: "2NT – [[3♣]]", title: "파트너가 퍼펫 3♣를 불렀을 때 오프너",
+    rows: ["20–21|5장 메이저|3♥ / 3♠|", "20–21|4장 메이저 하나 이상|3♦|", "20–21|4·5장 메이저 없음|3NT|",
+      "#3♦ 뒤 응답자 (없는 메이저를 부름)", "|♠ 4장|3♥|", "|♥ 4장|3♠|", "|양 메이저 4장|4♦|", "|메이저 없음|3NT|"] },
+  { id: "muppet", cat: "nt", t: 3, face: "3♣", name: "머펫 스테이맨",
+    when: "퍼펫을 다듬은 방식. 3♥와 3NT 대답을 바꿔서 강한 핸드가 디클레어러가 되게 해요.",
+    auc: "2NT – [[3♣]]", title: "파트너가 머펫 3♣를 불렀을 때 오프너", chk: true,
+    rows: ["20–21|4장 메이저 있음|3♦|", "20–21|4·5장 메이저 없음|3♥|", "20–21|♠ 5장|3♠|", "20–21|♥ 5장|3NT|"] },
+
+  /* ───────── 응답 · 레이즈 ───────── */
+  { id: "j2nt", cat: "resp", t: 1, face: "2NT", name: "제이코비 2NT",
+    when: "파트너 1♥/1♠ 오프닝에 13점 이상, 4장 이상 서포트. 게임 포싱.",
+    auc: "1♠ – [[2NT]]", title: "파트너가 제이코비 2NT를 불렀을 때 오프너",
+    rows: ["12+|싱글톤 · 보이드|3♣ / 3♦ / 3♥|그 짧은 수트", "18+|짧은 수트 없음|3♠|", "15–17|짧은 수트 없음|3NT|", "12–14|짧은 수트 없음|4♠|최소", "12+|좋은 5장 사이드|4♣ / 4♦ / 4♥|"] },
+  { id: "splinter", cat: "resp", t: 1, face: "4♣ 4♦", name: "스플린터",
+    when: "더블 점프 새 수트 = 4장 이상 서포트 + 그 수트 싱글톤·보이드 + 약 13–16 support points. 17점 이상이면 제이코비 2NT를 써요.",
+    auc: "1♥ – [[4♣]]", title: "파트너가 스플린터 4♣를 불렀을 때 오프너",
+    rows: ["최소|♣에 K·Q 낭비|4♥|사인오프", "15+|♣에 낭비 없음|큐비드 / 4NT|슬램 탐색", "12+|♣ A + 추가 트릭 원천|큐비드|A만 있으면 4♥도 가능"] },
+  { id: "2over1", cat: "resp", t: 1, face: "2/1", name: "2/1 게임 포싱",
+    sys: { sayc: { when: "SAYC에서 메이저 오프닝에 2레벨 새 수트 응답은 10점 이상, 1라운드 포싱이에요. 게임 포싱이 아니라서 다음에 멈출 수 있어요.",
+      title: "SAYC: 파트너가 2레벨 새 수트로 응답했을 때 오프너",
+      rows: ["최소|♠ 6장 이상|2♠|SAYC는 5장으로 반복하지 않음", "12+|♣ 4장 이상|3♣|핏", "12–14|밸런스, 스토퍼|2NT|", "12+|새 수트 4장|2♦ / 2♥|실제 4장", "18–19|밸런스|3NT|15–17은 1NT 오픈",
+        "#응답자 다음 비드", "10–12|초대|2NT / 3레벨 반복|게임 전에 멈출 수 있음", "13+|게임|게임 비드 / 새 수트|"] } },
+    when: "1♥/1♠ 오프닝에 2레벨 새 수트 응답(1♥–2♠ 제외)은 12점 이상 게임 포싱. 패스드 핸드나 경쟁 중엔 성립 안 해요.",
+    auc: "1♠ – [[2♣]]", title: "파트너가 2/1로 응답했을 때 오프너",
+    rows: ["최소|♠ 5–6장, 다른 표시 없음|2♠|캐치올", "12+|♣ 4장 이상|3♣|핏", "12–14 / 18–19|밸런스, 스토퍼|2NT|둘 다 게임 포싱", "12+|새 수트 4장|2♦ / 2♥|실제 4장",
+      "#1♦–2♣ (2/1 자연형, 게임 포싱)", "12–14|♦ 5장 이상|2♦|", "12–14|밸런스|2NT|4장 메이저 있어도 됨", "18–19|밸런스|3NT|", "15–17|♦ 6장 이상|3♦|", "#응답자", "12+|게임 포싱|게임 전 패스 금지|패스트 어라이벌 참고"] },
+  { id: "1ntf", cat: "resp", t: 1, face: "1NT", name: "1NT 포싱",
+    sys: { sayc: { when: "SAYC에서 1♥/1♠–1NT는 6–10점, 비포싱이에요. 오프너는 최소 밸런스면 패스할 수 있어요. 1NT 포싱은 2/1에서 써요.",
+      title: "SAYC: 파트너가 1NT로 응답했을 때 오프너",
+      rows: ["12–14|밸런스|패스|", "12–15|다른 수트 4장|2♣ / 2♦ / 2♥|", "12–15|♠ 6장|2♠|", "16–18|♠ 6장 좋은 수트|3♠|초대", "18–19|밸런스|2NT|초대", "19+|새 수트|점프 시프트|게임 포싱"] } },
+    when: "2/1에서 1♥/1♠–1NT는 6–11점, 1라운드 포싱. 3장 서포트 리밋 레이즈도 여기서 시작해요.",
+    auc: "1♠ – [[1NT]]", title: "파트너가 1NT 포싱을 했을 때 오프너",
+    rows: ["12–15|다른 4장 없음|2♣ / 2♦|3장 마이너도 가능", "12–17|♥ 4장|2♥|", "12–15|♠ 6장|2♠|", "16–18|♠ 6장 좋은 수트|3♠|초대",
+      "18–19|밸런스|2NT|", "19+|새 수트|점프 시프트|게임 포싱", "#응답자", "6–9|♠ 2장|2♠|Preference", "10–11|♠ 3장|3♠|리밋 레이즈"] },
+  { id: "jsresp", cat: "resp", t: 2, face: "2♠", name: "점프 시프트 (응답자)",
+    sys: { sayc: { when: "파트너 오프닝에 한 단계 뛰어 새 수트. SAYC에서는 강한 점프 시프트(17점 이상, 슬램 관심)예요." },
+      gf: { when: "파트너 오프닝에 한 단계 뛰어 새 수트. 2/1을 써도 자동으로 약한 방식이 되지는 않아요. 기본은 강한 점프 시프트(17점 이상)이고, Weak(2–5점, 6장)나 초대형(9–11점)은 따로 약속해요." } },
+    when: "파트너 오프닝에 한 단계 뛰어 새 수트. 강한 방식은 17점 이상 슬램 관심, 약한 방식은 2–5점 6장.",
+    auc: "1♥ – [[2♠]]", title: "파트너가 점프 시프트를 했을 때 오프너", chk: true,
+    rows: ["#강한 점프 시프트", "12+|♠ 3장 이상|3♠|", "12+|자기 수트 6장|3♥|", "12+|밸런스|2NT|", "#약한 점프 시프트", "12–17|♠ 3장 핏이 있어도|패스|", "18+|게임 가능|게임 비드|"] },
+  { id: "bergen", cat: "resp", t: 2, face: "3♣ 3♦", name: "버겐 레이즈",
+    when: "메이저 오프닝에 4장 서포트를 점수 별로 3레벨에서 바로 보여줘요.",
+    auc: "1♠ – [[3♣]]", title: "버겐 레이즈 응답 (응답자)",
+    rows: ["7–9|♠ 4장|3♣|Constructive", "10–12|♠ 4장|3♦|리밋", "0–6|♠ 4장|3♠|Preempt", "#오프너", "최소|리밋 거절|3♠|", "충분|게임|4♠|"] },
+  { id: "revbergen", cat: "resp", t: 3, face: "3♣ 3♦", name: "리버스 버겐",
+    when: "버겐의 3♣와 3♦ 의미를 바꾼 방식.",
+    auc: "1♠ – [[3♣]]", title: "리버스 버겐 응답 (응답자)",
+    rows: ["10–12|♠ 4장|3♣|리밋", "7–9|♠ 4장|3♦|Constructive", "0–6|♠ 4장|3♠|Preempt"] },
+  { id: "drury", cat: "resp", t: 2, face: "2♣", name: "드루리",
+    when: "패스드 핸드가 3·4번째 자리 메이저 오프닝에 10점 이상(support points) + 3장 이상 서포트일 때 2♣. HCP는 대개 11 이하예요.",
+    auc: "패스 – 패스 – 1♠ – 패스 – [[2♣]]", title: "파트너가 드루리 2♣를 불렀을 때 오프너",
+    rows: ["#리버스 드루리 (가장 흔함)", "최저~정상|게임 관심 없음|2♠|13점 밸런스도 포함", "정상 이상|게임 탐색|다른 비드|", "#오리지널 드루리", "라이트||2♦|", "#투웨이 드루리", "|2♣ = 3장, 2♦ = 4장 서포트||"] },
+  { id: "inverted", cat: "resp", t: 2, face: "2♣ 2♦", name: "인버티드 마이너",
+    when: "마이너 단순 레이즈는 10점 이상 포싱, 점프 레이즈는 약한 Preempt로 뒤집은 방식. 4장 메이저가 없을 때.",
+    auc: "1♣ – [[2♣]]", title: "파트너가 인버티드 2♣를 불렀을 때 오프너",
+    rows: ["12–14|밸런스|2NT|", "12+|스토퍼 표시|2♦ / 2♥ / 2♠|", "최소|언밸런스|3♣|", "18–19|밸런스|3NT|", "#1♣–3♣", "5–9|♣ 5장 이상|3♣|Preempt, 비포싱"] },
+  { id: "twalsh", cat: "resp", t: 3, face: "1♦", name: "트랜스퍼 월시",
+    when: "1♣ 오프닝에 1♦ = ♥ 4장 이상, 1♥ = ♠ 4장 이상으로 한 단계 아래 수트를 불러요.",
+    auc: "1♣ – [[1♦]]", title: "파트너가 1♦(♥ 트랜스퍼)를 불렀을 때 오프너", chk: true,
+    rows: ["12–14|♥ 3–4장|1♥|수락", "17–19|♥ 4장|2♥|Superaccept", "12–14|♥ 2장 이하|1♠ / 1NT|"] },
+
+  /* ───────── 리비드 · 게임 트라이 ───────── */
+  { id: "reverse", cat: "rebid", t: 1, face: "2♥", name: "리버스",
+    when: "오프너가 첫 수트보다 높은 새 수트를 2레벨에서 부르면 17점 이상, 첫 수트가 더 길어요. 1라운드 포싱.",
+    auc: "1♦ – 1♠ – [[2♥]]", title: "파트너가 리버스했을 때 응답자",
+    rows: ["6–7|♠ 5장 이상|2♠|비포싱", "6–7|♦ 3장|3♦|Preference", "6–7|♣ 스토퍼|2NT|잉버먼 쓰면 약함 신호", "6–7|♥ 4장|3♥|비포싱", "8+|♥ 4장|4♥|게임", "8+|스토퍼 있음|3NT|"] },
+  { id: "ojs", cat: "rebid", t: 2, face: "3♣", name: "점프 시프트 (오프너)",
+    when: "오프너가 한 단계 뛰어 새 수트를 부르면 19–21점, 게임 포싱.",
+    auc: "1♦ – 1♠ – [[3♣]]", title: "파트너가 점프 시프트했을 때 응답자",
+    rows: ["6+|♠ 6장|3♠|", "6+|♦ 3장|3♦|", "6+|♥ 스토퍼|3NT|", "6+|♣ 4장|4♣|"] },
+  { id: "nmf", cat: "rebid", t: 1, face: "NMF", name: "뉴 마이너 포싱",
+    when: "NMF를 약속했을 때: 오프너가 1NT로 리비드한 뒤, 11점 이상 응답자가 메이저 핏을 찾으려고 남은 마이너를 불러요. 포싱. 약속이 없으면 이 비드는 실제 수트 비포싱이에요.",
+    auc: "1♣ – 1♠ – 1NT – [[2♦]]", title: "파트너가 NMF를 썼을 때 오프너",
+    rows: ["12–13|♠ 3장|2♠|", "14|♠ 3장|3♠|최대", "12–14|♥ 4장, ♠ 3장 없음|2♥|", "12–13|위 조건 없음|2NT|", "14|위 조건 없음|3NT|최대"] },
+  { id: "checkback", cat: "rebid", t: 2, face: "2♣", name: "체크백 스테이맨",
+    when: "NMF와 같은 목적. 오프너 1NT 리비드 뒤 항상 2♣로 물어요.",
+    auc: "1♦ – 1♥ – 1NT – [[2♣]]", title: "파트너가 체크백 2♣를 불렀을 때 오프너",
+    rows: ["12–13|♥ 3장|2♥|", "14|♥ 3장|3♥|", "12–14|♠ 4장|2♠|", "12–13|위 조건 없음|2♦|", "14|위 조건 없음|2NT|"] },
+  { id: "xyz", cat: "rebid", t: 3, face: "XYZ", name: "XYZ · 투웨이 체크백",
+    when: "1레벨에서 세 번 비딩한 뒤 2♣ = 2♦ 강제(약하거나 초대), 2♦ = 인위적 게임 포싱.",
+    auc: "1♣ – 1♥ – 1♠ – [[2♣]]", title: "XYZ 응답자 비드", chk: true,
+    rows: ["0–9|♦로 멈추기|2♣ → 2♦ → 패스|", "10–11|초대|2♣ → 2♦ → 다음 비드|", "12+|게임 포싱|2♦|인위적"] },
+  { id: "4sf", cat: "rebid", t: 1, face: "4SF", name: "4번째 수트 포싱",
+    when: "세 수트가 나온 뒤 응답자가 네 번째 수트를 부르면 인위적 게임 포싱. 게임 점수가 있고 맞는 계약을 찾을 때.",
+    auc: "1♣ – 1♥ – 1♠ – [[2♦]]", title: "파트너가 4번째 수트를 불렀을 때 오프너",
+    rows: ["12–14|♦ 스토퍼|2NT|", "15+|♦ 스토퍼|3NT|", "12+|♥ 3장|2♥ / 3♥|최소 / 최대", "12+|♣ 6장 이상|3♣|", "12+|♠ 5장|2♠|5-5 표시"] },
+  { id: "tsf", cat: "rebid", t: 3, face: "3SF", name: "3번째 수트 포싱",
+    when: "오프너가 자기 수트를 반복한 뒤 응답자가 세 번째 수트를 부르면, SAYC 기본은 실제 4장 이상, 10점 이상, 1라운드 포싱이에요.",
+    auc: "1♦ – 1♠ – 2♦ – [[2♥]]", title: "파트너가 3번째 수트를 불렀을 때 오프너",
+    rows: ["12+|♠ 3장|2♠|", "12+|♥ 4장|3♥|", "12+|♣ 스토퍼|2NT|", "12+|♦ 6장, 다른 것 없음|3♦|"] },
+  { id: "ingberman", cat: "rebid", t: 3, face: "2NT", name: "잉버먼",
+    when: "리버스 뒤 응답자의 2NT = 약함. 오프너에게 3♣를 부르게 하고 멈춰요.",
+    auc: "1♦ – 1♠ – 2♥ – [[2NT]]", title: "파트너가 잉버먼 2NT를 불렀을 때 오프너",
+    rows: ["17–18|최소 리버스|3♣|강제", "19+|게임 가능|다른 비드|", "#응답자", "5–7|♣·♦ Preference|패스 / 3♦|"] },
+  { id: "helpsuit", cat: "rebid", t: 2, face: "3♣", name: "헬프 수트 게임 트라이",
+    when: "메이저 단순 레이즈 뒤, 오프너가 도움이 필요한 수트(루저 많은 3장 이상)를 불러 게임을 묻는 방식.",
+    auc: "1♥ – 2♥ – [[3♣]]", title: "파트너가 헬프 수트 3♣를 불렀을 때 응답자",
+    rows: ["8–9|♣ A·K 또는 짧음|4♥|수락", "6–7|♣ A만 있음|3♥ / 4♥|트럼프·다른 A·K까지 보고 판단", "6–7|♣ 약함|3♥|거절", "중간|♣ 애매, 다른 수트 강함|3♦|카운터 트라이"] },
+  { id: "ssgt", cat: "rebid", t: 3, face: "3♦", name: "쇼트 수트 게임 트라이",
+    when: "메이저 단순 레이즈 뒤, 오프너가 자신의 짧은 수트를 보여주며 게임을 물어요.",
+    auc: "1♥ – 2♥ – [[3♦]]", title: "파트너가 짧은 ♦를 보여줬을 때 응답자", chk: true,
+    rows: ["6–9|♦에 낭비 없음|4♥|수락 (♦ A는 낭비 아님)", "6–9|♦ K·Q 낭비|3♥|거절"] },
+  { id: "ggt", cat: "rebid", t: 3, face: "2NT", name: "2NT 일반 게임 트라이",
+    when: "메이저 단순 레이즈 뒤 2NT로 응답자 핸드 전체 강도를 물어요.",
+    auc: "1♠ – 2♠ – [[2NT]]", title: "파트너가 2NT 게임 트라이를 했을 때 응답자", chk: true,
+    rows: ["6–7|최소|3♠|거절", "8–9|최대 (트럼프 아너·사이드 A 포함)|4♠|수락"] },
+  { id: "fast", cat: "rebid", t: 2, face: "4♠", name: "패스트 어라이벌",
+    when: "게임 포싱이 된 뒤 바로 게임으로 뛰면 가장 약한 손, 천천히 가면 슬램 관심.",
+    auc: "1♠ – 2♣ – 2♠ – [[4♠]]", title: "게임 포싱 뒤 속도의 의미",
+    rows: ["12–14|슬램 관심 없음|4♠|바로 게임", "15+|슬램 관심|3♠|슬로 어라이벌", "15+|컨트롤 있음|4♣ / 4♦|큐비드"] },
+  { id: "bart", cat: "rebid", t: 3, face: "2♦", name: "BART",
+    when: "1♠–1NT–2♣ 뒤 2♦를 인위적으로 써서 약한 ♥ 핸드와 초대 핸드를 구분해요.",
+    auc: "1♠ – 1NT – 2♣ – [[2♦]]", title: "파트너가 BART 2♦를 불렀을 때 오프너", chk: true,
+    rows: ["보통|♥ 2–3장|2♥|비포싱", "|♥ 0–1장|2♠|", "추가 강도||2NT|", "|♠ 5장 + ♣ 5장|3♣|", "#응답자", "약함|♥ 5장 이상|패스|", "초대|♠ 2장 등|다음 비드|"] },
+  { id: "wolff", cat: "rebid", t: 3, face: "3♣", name: "울프 사인오프",
+    when: "오프너 2NT 점프 리비드(18–19) 뒤 3♣로 3♦를 강제하고 약하게 멈추거나 초대해요.",
+    auc: "1♣ – 1♥ – 2NT – [[3♣]]", title: "울프 3♣ 뒤", chk: true,
+    rows: ["#오프너", "18–19|항상|3♦|강제", "#응답자", "약함|♦ 긴 수트|패스|", "약함|♥ 6장|3♥|사인오프", "게임 포싱|새 수트|3♦ / 3♥ 직접|"] },
+  { id: "gazzilli", cat: "rebid", t: 3, face: "2♣", name: "가질리",
+    when: "1메이저–1NT(또는 1♠) 뒤 오프너 2♣ = ♣ 최소(12–15점, 보통 ♣ 3장 이상) 또는 아무 16점 이상. 1라운드 포싱이라 패스할 수 없어요.",
+    auc: "1♥ – 1♠ – [[2♣]]", title: "파트너가 가질리 2♣를 불렀을 때 응답자", chk: true,
+    rows: ["8+|아무|2♦|인위적, 포싱", "0–7|Preference|2♠ / 2♥ (5장 이상)|패스 불가", "#2♦ 뒤 오프너", "12–15|최소|2♥|", "16+|강함|다른 비드|"] },
+
+  /* ───────── 상대 오프닝에 개입 ───────── */
+  { id: "overcall", cat: "def", t: 1, face: "1♠", name: "오버콜",
+    when: "상대 오프닝 뒤 1레벨은 8–16점에 좋은 5장, 2레벨은 약 10–16점에 좋은 5장 이상.",
+    auc: "1♥ – [[1♠]] – 패스 – ?", title: "파트너가 1♠ 오버콜을 했을 때 내 응답",
+    rows: ["0–6||패스|", "7–10|♠ 3장 이상|2♠|", "~9|♠ 4장 이상|3♠|Preemptive Jump", "11+|♠ 3장 이상|2♥|큐비드, 리밋 이상", "8–11|♥ 스토퍼, 핏 없음|1NT|", "10+|좋은 5장 수트|새 수트|"] },
+  { id: "tox", cat: "def", t: 1, face: "X", x: true, name: "테이크아웃 더블",
+    when: "상대 오프닝 뒤, 안 나온 수트를 고루 갖고 12점 이상일 때 X. 파트너에게 수트를 고르라는 뜻이에요.",
+    auc: "1♥ – [[X]] – 패스 – ?", title: "파트너가 테이크아웃 더블을 했을 때 내 응답",
+    rows: ["0–8|가장 긴 수트|최저 레벨|패스하면 안 돼요", "6–10|♥ 스토퍼, 밸런스|1NT|", "9–11|4장 이상 수트|점프|초대", "12+|게임 가능|2♥|큐비드",
+      "#더블러 다음 비드", "18+|밸런스|NT|", "17+|5장 수트|그 수트|강한 X"] },
+  { id: "1ntoc", cat: "def", t: 1, face: "1NT", name: "1NT 오버콜",
+    when: "상대 오프닝 뒤 15–17점 밸런스 + 상대 수트 스토퍼. 1NT 오프닝처럼 시스템이 그대로예요.",
+    auc: "1♥ – [[1NT]] – 패스 – ?", title: "파트너가 1NT 오버콜을 했을 때 내 응답",
+    rows: ["0–7||패스|", "8+|♠ 4장|2♣|스테이맨", "0+|5장 수트|트랜스퍼|", "8–9||2NT|초대", "10+||3NT|"] },
+  { id: "michaels", cat: "def", t: 1, face: "2♥", name: "마이클스 큐비드",
+    when: "상대 오프닝 수트를 그대로 불러 5-5 투 수터를 보여줘요. 메이저 오프닝엔 다른 메이저와 마이너, 마이너 오프닝엔 두 메이저. 강도는 6–10 또는 17점 이상이고, 11–16은 일반 오버콜로 시작해요.",
+    auc: "1♥ – [[2♥]] – 패스 – ?", title: "파트너가 마이클스를 했을 때 내 응답 (♠ + 마이너)",
+    rows: ["0–9|♠ 2장 이상|2♠|", "10–12|♠ 3장 이상|3♠|초대", "13+|♠ 3장 이상|4♠|", "~|♠ 짧음|2NT|마이너를 알려달라"] },
+  { id: "u2nt", cat: "def", t: 1, face: "2NT", name: "언유주얼 2NT",
+    when: "상대 1레벨 오프닝 뒤 점프 2NT. 안 나온 수트 중 낮은 두 수트 5-5. 메이저 오프닝 뒤면 ♣+♦, 1♣ 뒤면 ♦+♥, 1♦ 뒤면 ♣+♥. 강도는 6–10 또는 17점 이상이고, 11–16은 일반 오버콜로 시작해요.",
+    auc: "1♥ – [[2NT]] – 패스 – ?", title: "파트너가 언유주얼 2NT를 했을 때 내 응답 (♣ + ♦)",
+    rows: ["0–9|더 긴 마이너|3♣ / 3♦|", "약함|마이너 핏|4♣ / 4♦|Preemptive", "초대 이상|게임 관심|3♥|큐비드", "게임|마이너 핏|5♣ / 5♦|"] },
+  { id: "wjo", cat: "def", t: 2, face: "2♥", name: "위크 점프 오버콜",
+    when: "상대 오프닝 뒤 한 단계 뛰어 오버콜 = 위크 투처럼 5–10점, 좋은 6장.",
+    auc: "1♣ – [[2♥]] – 패스 – ?", title: "파트너가 위크 점프 오버콜을 했을 때 내 응답",
+    rows: ["~14|핏 없음|패스|", "~14|♥ 3장 이상|3♥|Preempt", "15+|게임 탐색|2NT|질문", "16+|♥ 핏|4♥|"] },
+  { id: "balance", cat: "def", t: 2, face: "1NT", name: "밸런싱",
+    when: "상대 1레벨 오프닝 뒤 두 사람이 패스하면, 4번째 자리에서는 파트너 몫까지 감안해 가볍게 개입해요.",
+    auc: "1♥ – 패스 – 패스 – [[1NT]]", title: "4번째 자리에서 내 비드",
+    rows: ["11–14|밸런스, ♥ 스토퍼|1NT|밸런싱 범위", "8+|♥ 짧음|X|", "7+|5장 수트|오버콜|직접보다 가볍게", "15–18|밸런스|X 후 NT|"] },
+  { id: "responsive", cat: "def", t: 2, face: "X", x: true, name: "리스폰시브 더블",
+    when: "파트너가 테이크아웃 X를 했는데 상대가 레이즈하면, 내 X = 점수는 있는데 수트를 못 정했어요.",
+    auc: "1♥ – X – 2♥ – [[X]]", title: "리스폰시브 상황에서 내 비드",
+    rows: ["8+|♠ 4장|2♠ / 3♠|", "8+|두 마이너|X|리스폰시브", "8+|♥ 스토퍼|2NT|", "#더블러", "|마이너 선택|3♣ / 3♦|"] },
+  { id: "dont", cat: "def", t: 2, face: "DONT", name: "DONT",
+    when: "상대 1NT에 대한 방어. 원 수터는 X, 두 수터는 낮은 수트를 불러요.",
+    auc: "1NT – [[2♣]]", title: "DONT 개입 의미", cols: "개입|보여주는 것|파트너|메모",
+    rows: ["X|원 수터 (♠ 제외)|2♣|릴레이", "2♣|♣ + 더 높은 수트|패스 / 2♦|", "2♦|♦ + 메이저|패스 / 2♥|", "2♥|♥ + ♠|패스 / 2♠|", "2♠|♠ 원 수터|패스|"] },
+  { id: "capp", cat: "def", t: 2, face: "2♣", name: "카펠레티",
+    when: "상대 1NT에 대한 방어 (해밀턴). X는 페널티, 2♣는 원 수터.",
+    auc: "1NT – [[2♣]]", title: "카펠레티 개입 의미", cols: "개입|보여주는 것|파트너|메모",
+    rows: ["X|15+ 페널티|패스|", "2♣|원 수터|2♦|릴레이", "2♦|♥ + ♠|Preference|", "2♥|♥ + 마이너|패스 / 2NT|", "2♠|♠ + 마이너|패스 / 2NT|", "2NT|♣ + ♦|Preference|"] },
+  { id: "landy", cat: "def", t: 3, face: "2♣", name: "랜디",
+    when: "상대 1NT에 2♣ = 양 메이저 (5-4 이상). 나머지 비드는 그 수트를 보여줘요.",
+    auc: "1NT – [[2♣]]", title: "랜디 2♣ 뒤 파트너", cols: "개입|보여주는 것|파트너|메모",
+    rows: ["2♣|♥ + ♠|2♥ / 2♠|Preference", "2♣|♥ + ♠|2♦|길이가 같음, 골라달라", "2♣|♥ + ♠|2NT|강함, 질문"] },
+  { id: "mlandy", cat: "def", t: 3, face: "2♦", name: "멀티 랜디",
+    when: "상대 1NT에 2♣ = 양 메이저, 2♦ = 메이저 원 수터, 2♥/2♠ = 그 메이저 + 마이너.",
+    auc: "1NT – [[2♦]]", title: "멀티 랜디 개입 의미", cols: "개입|보여주는 것|파트너|메모",
+    rows: ["X|페널티|패스|", "2♣|♥ + ♠|Preference|", "2♦|메이저 하나 6장|2♥|Pass or Correct", "2♥ / 2♠|그 메이저 5장 + 마이너|패스 / 2NT|"] },
+  { id: "meckwell", cat: "def", t: 3, face: "X", x: true, name: "멕웰",
+    when: "상대 1NT에 X = 마이너 하나 또는 양 메이저, 2♣/2♦ = 그 마이너 + 메이저.",
+    auc: "1NT – [[X]]", title: "멕웰 개입 의미", cols: "개입|보여주는 것|파트너|메모", chk: true,
+    rows: ["X|마이너 하나 또는 ♥ + ♠|2♣|릴레이", "2♣ / 2♦|그 마이너 + 메이저|패스 / 2♦|", "2♥ / 2♠|그 수트|패스|"] },
+  { id: "brozel", cat: "def", t: 3, face: "2♣", name: "브로젤",
+    when: "상대 1NT에 모든 수트 비드가 두 수트를 보여줘요. X = 원 수터.",
+    auc: "1NT – [[2♣]]", title: "브로젤 개입 의미", cols: "개입|보여주는 것|파트너|메모", chk: true,
+    rows: ["X|원 수터|2♣|릴레이", "2♣|♣ + ♥|Preference|", "2♦|♦ + ♥|Preference|", "2♥|♥ + ♠|Preference|", "2♠|♠ + 마이너|패스 / 2NT|", "2NT|♣ + ♦|Preference|"] },
+  { id: "woolsey", cat: "def", t: 3, face: "X", x: true, name: "울시",
+    when: "상대 1NT에 X = 4장 메이저 + 5장 이상 마이너. 2♣ 이상은 멀티 랜디와 같아요.",
+    auc: "1NT – [[X]]", title: "울시 개입 의미", cols: "개입|보여주는 것|파트너|메모", chk: true,
+    rows: ["X|4장 메이저 + 긴 마이너|2♣|질문", "2♣|♥ + ♠|Preference|", "2♦|메이저 하나|2♥|Pass or Correct", "2♥ / 2♠|그 메이저 + 마이너|패스 / 2NT|"] },
+  { id: "sandwich", cat: "def", t: 3, face: "1NT", name: "샌드위치 1NT",
+    when: "상대 두 사람이 사이에 비딩하면, 그 사이의 1NT = 안 나온 두 수트 5-5, 약함.",
+    auc: "1♥ – 패스 – 1♠ – [[1NT]]", title: "파트너가 샌드위치 1NT를 했을 때 내 응답",
+    rows: ["약함|♣ Preference|2♣|", "약함|♦ Preference|2♦|", "11+|게임 관심|큐비드|"] },
+  { id: "transadv", cat: "def", t: 3, face: "2♦", name: "트랜스퍼 어드밴스",
+    when: "파트너가 오버콜(또는 X)한 뒤, 새 수트를 한 단계 아래 수트로 트랜스퍼해서 보여줘요.",
+    auc: "1♣ – 1♥ – 패스 – [[2♦]]?", title: "트랜스퍼 어드밴스 (대표 형태)", chk: true,
+    rows: ["7+|5장 이상 새 수트|한 단계 아래 수트|오버콜러가 받음", "10+|오버콜 수트 서포트|트랜스퍼 바로 아래|리밋 이상"] },
+  { id: "elc", cat: "def", t: 3, face: "2♦", name: "이퀄 레벨 컨버전",
+    when: "테이크아웃 X 뒤 파트너가 고른 수트를 같은 레벨의 다른 수트로 바꿔도 강한 손이 아니에요.",
+    auc: "1♥ – X – 패스 – 2♣ – 패스 – 패스 – [[2♦]]", title: "더블러가 같은 레벨에서 바꿀 때",
+    rows: ["12–16|♦ + ♠, ♣ 짧음|2♦|강함 아님", "17+|♦ 긴 수트|점프|강한 X"] },
+  { id: "vspre", cat: "def", t: 2, face: "X", x: true, name: "상대 Preempt 방어",
+    when: "상대 위크 투·Preempt 뒤 X는 테이크아웃, 2NT는 15–18점 스토퍼. 파트너 X 뒤 2NT는 레벤솔.",
+    auc: "2♥ – [[X]] – 패스 – ?", title: "파트너가 위크 투에 X했을 때 내 응답",
+    rows: ["0–7|긴 수트|2NT → 3♣ 강제|레벤솔, 약함", "8–11|긴 수트|3레벨 직접|건설적", "12+|♥ 스토퍼|3NT|", "12+|게임 탐색|3♥|큐비드", "|좋은 ♥ 5장|패스|페널티으로 바꿈"] },
+  { id: "leaping", cat: "def", t: 3, face: "4♣ 4♦", name: "리핑 마이클스",
+    when: "상대 위크 투 뒤 4레벨 마이너 점프 = 그 마이너 + 안 나온 메이저 5-5, 게임 포싱.",
+    auc: "2♠ – [[4♣]]", title: "파트너가 리핑 마이클스를 했을 때 내 응답",
+    rows: ["|♥ Preference|4♥|", "|♣ Preference|5♣|", "강함|슬램 탐색|4♦ 등|큐비드"] },
+  { id: "nonleap", cat: "def", t: 3, face: "3♣ 3♦", name: "논리핑 마이클스",
+    when: "상대 위크 투 뒤 3레벨 마이너 = 그 마이너 + 안 나온 메이저 두 수트 (점프하지 않음).",
+    auc: "2♠ – [[3♣]]", title: "파트너가 논리핑 마이클스를 했을 때 내 응답", chk: true,
+    rows: ["약함|♥ Preference|3♥|", "약함|♣ Preference|패스|", "게임|♥ 핏|4♥|"] },
+  { id: "vs2c", cat: "def", t: 3, face: "2♣", name: "상대 강한 2♣ 방어",
+    when: "상대가 강한 2♣로 열면 게임을 막기보다 희생·리드를 노려요. 대표 방식: X = 메이저 두 수트, 2NT = 마이너 두 수트.",
+    auc: "2♣ – ?", title: "상대 2♣ 뒤 내 개입 (대표 형태)", chk: true,
+    rows: ["약함|♥ + ♠|X|", "약함|♣ + ♦|2NT|", "약함|좋은 원 수터|일반 오버콜|"] },
+  { id: "vsmulti", cat: "def", t: 3, face: "2♦", name: "상대 멀티 방어",
+    when: "상대 멀티 2♦에 X = 13–15 밸런스 또는 강함, 일반 오버콜, 나중의 X는 테이크아웃.",
+    auc: "2♦(멀티) – ?", title: "상대 멀티 뒤 내 개입 (대표 형태)", chk: true,
+    rows: ["13–15|밸런스|X|", "16–18|밸런스, 스토퍼|2NT|", "|좋은 5장 이상|일반 오버콜|", "|메이저 확인 뒤|X|테이크아웃"] },
+
+  /* ───────── 상대가 개입했을 때 ───────── */
+  { id: "negx", cat: "comp", t: 1, face: "X", x: true, name: "네거티브 더블",
+    when: "파트너 오프닝 뒤 상대가 오버콜하면, 안 나온 메이저 4장과 6점 이상을 보여주는 X.",
+    auc: "1♣ – 1♠ – [[X]] – 패스", title: "파트너가 네거티브 더블을 했을 때 오프너",
+    rows: ["12–15|♥ 4장|2♥|", "16–18|♥ 4장|3♥|점프", "19+|♥ 4장|4♥|", "12–14|♠ 스토퍼, 밸런스|1NT|", "12–15|♥ 없음, ♣ 긴 수트|2♣|"] },
+  { id: "supx", cat: "comp", t: 1, face: "X", x: true, name: "서포트 더블",
+    when: "응답자가 수트를 불렀는데 상대가 개입하면, 오프너의 X = 그 수트 정확히 3장.",
+    auc: "1♣ – 패스 – 1♥ – 1♠ – [[X]]", title: "오프너가 서포트 더블을 했을 때 응답자",
+    rows: ["#오프너", "12+|♥ 정확히 3장|X|서포트 X", "12–15|♥ 4장|2♥|레이즈 = 4장", "#응답자", "6–9|♥ 5장|2♥|", "6–9|♥ 4장, ♠ 스토퍼|1NT|", "10+|게임 탐색|2♠|큐비드"] },
+  { id: "redbl", cat: "comp", t: 2, face: "XX", name: "리더블 (상대 X 뒤)",
+    when: "우리 오프닝에 상대가 테이크아웃 X하면 XX = 10점 이상, 대개 핏 없이 페널티을 노려요.",
+    auc: "1♥ – X – [[XX]]", title: "상대 테이크아웃 X 뒤 응답자",
+    rows: ["10+|핏 없음|XX|", "10+|♥ 4장|2NT|조던", "6–9|♥ 3장|2♥|", "0–6|♥ 4장 이상|3♥|Preempt", "6+|좋은 5장 수트|새 수트|비포싱 (약속 확인)"] },
+  { id: "jordan", cat: "comp", t: 2, face: "2NT", name: "조던 · 트러스콧 2NT",
+    when: "우리 오프닝에 상대가 X하면 응답자 2NT = 10점 이상 + 4장 이상 서포트 (리밋 이상).",
+    auc: "1♠ – X – [[2NT]]", title: "파트너가 조던 2NT를 불렀을 때 오프너",
+    rows: ["12–14|최소|3♠|", "15+|게임|4♠|"] },
+  { id: "bromad", cat: "comp", t: 3, face: "2♣", name: "BROMAD",
+    when: "메이저 오프닝에 상대가 X한 뒤 버겐 레이즈를 쓰는 방식. 낮은 비드를 인위적 레이즈로 써요.",
+    auc: "1♠ – X – [[2♣]]", title: "BROMAD 응답자 (대표 형태)", chk: true,
+    rows: ["7–10|♠ 서포트|2♣ / 2♦|인위적 레이즈", "10+|♠ 4장|2NT|리밋 이상", "0–6|♠ 4장|3♠|Preempt"] },
+  { id: "transx", cat: "comp", t: 3, face: "1NT", name: "더블 뒤 트랜스퍼 응답",
+    when: "우리 오프닝에 상대가 X하면, 응답자가 한 단계 아래 수트로 트랜스퍼해 오프너가 디클레어러가 되게 해요.",
+    auc: "1♥ – X – [[1NT]]", title: "더블 뒤 트랜스퍼 응답 (대표 형태)", chk: true,
+    rows: ["6+|♣ 5장|1NT|♣ 트랜스퍼", "6+|♦ 5장|2♣|♦ 트랜스퍼", "6–9|♥ 3장|2♦|♥ 레이즈"] },
+  { id: "lebensohl", cat: "comp", t: 2, face: "2NT", name: "레벤솔",
+    when: "우리 1NT에 상대가 2레벨로 개입하면, 2NT로 3♣를 강제해 약한 손과 강한 손을 구분해요. '느리게 가면 스토퍼 있음'.",
+    auc: "1NT – 2♠ – [[2NT]]", title: "1NT – (2♠) 뒤 응답자",
+    rows: ["0–7|긴 수트|2NT → 3♣ → Pass or Correct|약함", "10+|5장 수트|3레벨 직접|게임 포싱", "10+|♠ 스토퍼 없음|3NT 직접|패스트 = 스토퍼 없음", "10+|♠ 스토퍼 있음|2NT → 3NT|슬로 = 스토퍼 있음",
+      "10+|4장 ♥, 스토퍼 없음|3♠ 직접|스테이맨 역할", "10+|4장 ♥, 스토퍼 있음|2NT → 3♠|", "8+|페널티|X|"] },
+  { id: "tleb", cat: "comp", t: 3, face: "3♦", name: "트랜스퍼 레벤솔",
+    when: "레벤솔에서 3레벨 비드를 트랜스퍼로 바꿔 강한 손이 디클레어러가 되게 해요.",
+    auc: "1NT – 2♠ – [[3♦]]", title: "트랜스퍼 레벤솔 (대표 형태)", chk: true,
+    rows: ["|♥ 5장 이상|3♦|♥ 트랜스퍼", "|상대 수트로 트랜스퍼|3♥|스테이맨 + 스토퍼 없음", "약함|긴 수트|2NT → 3♣|"] },
+  { id: "rubensohl", cat: "comp", t: 3, face: "2NT", name: "루벤솔",
+    when: "1NT에 대한 개입 뒤 2NT 이상을 모두 다음 수트 트랜스퍼로 써요.",
+    auc: "1NT – 2♥ – [[2NT]]", title: "루벤솔 (대표 형태)", chk: true,
+    rows: ["|♣ 5장 이상|2NT|♣ 트랜스퍼", "|♦ 5장 이상|3♣|♦ 트랜스퍼", "|스테이맨 역할|3♦|상대 수트로 트랜스퍼", "|♠ 5장 이상|3♥|♠ 트랜스퍼"] },
+  { id: "runout", cat: "comp", t: 2, face: "XX", name: "1NT 더블 탈출",
+    when: "우리 1NT에 상대가 페널티 X를 하면 약한 손은 도망가요. 방식이 다양해서 꼭 확인하세요.",
+    auc: "1NT – X – ?", title: "1NT – (X) 뒤 응답자 (대표 형태)", chk: true,
+    rows: ["0–7|5장 수트|2레벨 그 수트|그 수트로 탈출", "0–7|4-4 두 수트|XX|오프너가 2♣부터 위로", "8+|페널티 노림|패스 / XX|", "#스테이맨·트랜스퍼에 상대가 X하면", "|오프너 그 수트 짧음|패스|", "|오프너 정상|정상 대답|"] },
+  { id: "reopen", cat: "comp", t: 2, face: "X", x: true, name: "리오프닝 더블",
+    when: "내 오프닝 뒤 상대가 오버콜하고 둘 다 패스하면, 오프너는 그 수트가 짧을 때 X로 다시 열어요. 파트너의 Trap Pass를 살려요.",
+    auc: "1♣ – 1♠ – 패스 – 패스 – [[X]]", title: "오프너가 리오프닝 X를 했을 때 응답자",
+    rows: ["6+|좋은 ♠ 4장 이상|패스|Trap Pass → 페널티", "0+|그 외|가장 긴 수트|", "10+|♠ 스토퍼|NT|"] },
+  { id: "uvu", cat: "comp", t: 3, face: "3♣ 3♦", name: "언유주얼 대 언유주얼",
+    when: "상대가 마이클스나 언유주얼 2NT를 하면, 상대 수트 큐비드로 우리 레이즈와 새 수트를 구분해요. 낮은 큐 = 낮은 수트.",
+    auc: "1♥ – 2NT – [[3♣]]", title: "1♥ – (2NT: 마이너) 뒤 응답자", chk: true,
+    rows: ["10+|♥ 서포트|3♣|낮은 큐 = ♥ 리밋 이상", "10+|♠ 5장 이상|3♦|높은 큐 = ♠ 게임 포싱", "6–9|♥ 서포트|3♥|경쟁", "약함|♠ 5장|3♠|비포싱", "10+|마이너 잡음|X|페널티 관심"] },
+  { id: "lott", cat: "comp", t: 2, face: "LoTT", name: "Law of Total Tricks",
+    when: "경쟁 중에는 우리 트럼프 합계 장수만큼의 트릭 레벨까지 안전하게 경쟁해요.",
+    auc: "1♠ – 2♥ – 2♠ – 3♥ – ?", title: "경쟁 레벨 기준", cols: "우리 트럼프 합|예|경쟁 최대|메모",
+    rows: ["8장|5-3|2레벨|", "9장|5-4|3레벨|", "10장|5-5 / 6-4|4레벨|", "#조정", "|더블 핏, 좋은 분포|+1|", "|4-3-3-3, 낭비 아너|−1|"] },
+  { id: "penx", cat: "comp", t: 2, face: "X", x: true, name: "더블 판별",
+    when: "X는 상황에 따라 뜻이 바뀌어요. 파트너가 비딩했는지, 레벨, 상대 핏을 보고 판단해요.",
+    auc: "1♥ – X ?", title: "어떤 더블일까?", cols: "상황|예|이름|뜻",
+    rows: ["파트너 비딩 없음, 낮은 레벨|1♥ – X|테이크아웃|", "파트너 오프닝 뒤 상대 오버콜|1♣ – 1♠ – X|네거티브|", "파트너 X 뒤 상대 레이즈|1♥ – X – 2♥ – X|리스폰시브|",
+      "응답 뒤 상대 개입|1♣ – 1♥ – 1♠ – X|서포트|♥ 3장", "파트너 NT 뒤|1NT – 2♥ – X|페널티 (또는 약속)|", "상대 핏 확인, 높은 레벨|3♥ – X|협력·카드 쇼잉|", "상대 게임|4♠ – X|페널티|", "상대 슬램|6♠ – X|라이트너|특이 리드 요청"] },
+  { id: "sos", cat: "comp", t: 3, face: "XX", name: "SOS 리더블",
+    when: "우리 계약이 페널티 X를 맞고 파트너가 패스했을 때 XX = 도망가겠다, 다른 수트를 골라달라.",
+    auc: "1NT – X – 패스 – 패스 – [[XX]]", title: "리더블 종류",
+    rows: ["|패스 뒤 낮은 레벨 X|SOS XX|도망", "10+|우리 오프닝 뒤 상대 X|비즈니스 XX|강함", "|오버트릭을 믿음|비즈니스 XX|"] },
+  { id: "sac", cat: "comp", t: 3, face: "5♦", name: "희생 계약",
+    when: "상대 게임보다 우리가 더블 당해 지는 점수가 적으면 희생을 생각해요.", auc: "4♠ – [[5♦]]",
+    title: "더블 다운 허용 기준 (상대 메이저 게임 기준)", cols: "Vulnerability|허용 다운|판단|메모",
+    rows: ["우리 Non-Vul · 상대 Vul|3다운 (500) < 620|희생 유리|", "둘 다 Non-Vul|2다운 (300) < 420|", "둘 다 Vul|2다운 (500) < 620|", "우리 Vul · 상대 Non-Vul|1다운 (200) < 420|희생 불리|", "#IMP vs MP", "|IMP|확실할 때만|", "|MP|조금 더 공격적|"] },
+  { id: "fitjump", cat: "comp", t: 3, face: "3♦", name: "핏 쇼잉 점프",
+    when: "경쟁 중 새 수트 점프 = 그 수트 좋은 5장 + 파트너 수트 서포트.",
+    auc: "1♠ – 2♥ – [[3♦]]", title: "핏 쇼잉 점프 (대표 형태)", chk: true,
+    rows: ["10+|♦ 5장 + ♠ 4장|3♦|", "#오프너", "최소|♦ 도움 안 됨|3♠|", "충분|♦ 아너|4♠|"] },
+  { id: "mixed", cat: "comp", t: 3, face: "3♠", name: "믹스드 레이즈",
+    when: "경쟁 중 4장 서포트 + 6–9점(Preempt와 리밋 사이)을 보여주는 레이즈.",
+    auc: "1♥ – 1♠ – [[3♠]]", title: "경쟁 중 레이즈 구분 (대표 형태)", chk: true,
+    rows: ["0–6|♥ 4장|3♥|Preempt", "6–9|♥ 4장|점프 큐 등|믹스드", "10+|♥ 3장 이상|2♠|큐비드, 리밋 이상"] },
+  { id: "maximal", cat: "comp", t: 3, face: "X", x: true, name: "맥시멀 더블",
+    when: "상대가 바로 아래 수트로 경쟁해 게임 트라이 공간이 없을 때, 오프너의 X = 3레벨 게임 트라이.",
+    auc: "1♥ – 1♠ – 2♥ – 2♠ – 패스 – 패스 – [[X]]", title: "파트너가 맥시멀 X를 했을 때 응답자",
+    rows: ["최소||3♥|거절", "최대||4♥|수락", "|좋은 ♠|패스|드물게 페널티"] },
+  { id: "nfb", cat: "comp", t: 3, face: "2♥", name: "네거티브 프리 비드",
+    when: "상대 오버콜 뒤 응답자의 새 수트를 비포싱(6–10, 5장 이상)으로 쓰고, 강한 손은 네거티브 X 뒤에 부르게 해요.",
+    auc: "1♣ – 1♠ – [[2♥]]", title: "응답자 새 수트 의미",
+    rows: ["6–10|♥ 5장 이상|2♥|비포싱", "11+|♥ 5장 이상|X 후 ♥|"] },
+  { id: "goodbad", cat: "comp", t: 3, face: "2NT", name: "굿 배드 2NT",
+    when: "2레벨 경쟁에서 2NT = 3♣ 강제 뒤 약하게 경쟁, 3레벨 직접 비드 = 좋은 손.",
+    auc: "1♥ – 1♠ – 2♥ – 2♠ – [[2NT]]", title: "굿 배드 2NT (오프너)", chk: true,
+    rows: ["최소|그냥 경쟁|2NT → 3♣ → 정착|배드", "좋음|게임 트라이|3레벨 직접|굿"] },
+  { id: "scramble", cat: "comp", t: 3, face: "2NT", name: "스크램블링 2NT",
+    when: "파트너 테이크아웃 X 뒤 억지로 비딩해야 할 때 2NT = 두 수트가 있으니 골라달라.",
+    auc: "1♥ – X – 2♥ – 패스 – 패스 – [[2NT]]", title: "스크램블링 2NT", chk: true,
+    rows: ["약함|두 마이너|2NT|더블러가 고름", "약함|원 수터|그 수트 직접|"] },
+  { id: "western", cat: "comp", t: 3, face: "2♠", name: "웨스턴 큐비드",
+    when: "마이너 핏이 확인된 뒤 상대 수트 큐비드 = 3NT를 위해 그 수트 스토퍼를 물어요.",
+    auc: "1♦ – 1♠ – 2♦ – 패스 – [[2♠]]", title: "파트너가 스토퍼를 물었을 때",
+    rows: ["최소|♠ 스토퍼|2NT|", "최대|♠ 스토퍼|3NT|", "|스토퍼 없음|3♦|"] },
+  { id: "fpass", cat: "comp", t: 3, face: "패스", name: "포싱 패스",
+    when: "게임 포싱이 확정된 뒤 상대가 개입하면 패스는 포싱. 파트너는 X하거나 더 비딩해야 해요.",
+    auc: "1♠ – 2♣ – 3♥ – [[패스]]", title: "포싱 패스 뒤 파트너",
+    rows: ["|상대를 페널티으로|X|", "|더 비딩하고 싶음|비드|", "|패스 후 비드|슬램 관심|더 강함"] },
+
+  /* ───────── 슬램 ───────── */
+  { id: "rkcb", cat: "slam", t: 1, face: "RKCB", name: "RKCB 1430",
+    when: "트럼프가 정해진 뒤 4NT로 키카드 5장(에이스 4장 + 트럼프 K)을 물어요. 3014는 5♣와 5♦ 의미가 반대예요.",
+    auc: "1♥ – 3♥ – [[4NT]]", title: "파트너가 RKCB 4NT를 불렀을 때 내 대답", cols: "키카드|트럼프 Q|비드|메모",
+    rows: ["1 또는 4||5♣|14", "0 또는 3||5♦|30", "2|없음|5♥|", "2|있음|5♠|", "#Queen Ask (5♣/5♦ 뒤 다음 단계)", "|Q 없음|트럼프 5레벨|", "|Q 있음|K 있는 수트 / 6트럼프|",
+      "#5NT = King Ask (키카드 다 있음)", "|K 있음|그 수트 6레벨|", "|K 없음|6트럼프|"] },
+  { id: "bw", cat: "slam", t: 1, face: "4NT", name: "블랙우드",
+    when: "슬램을 생각할 때 4NT로 파트너의 에이스 수를 물어요.",
+    auc: "1♠ – 3♠ – [[4NT]]", title: "파트너가 4NT를 불렀을 때 내 대답", cols: "에이스||비드|메모",
+    rows: ["0 또는 4||5♣|", "1||5♦|", "2||5♥|", "3||5♠|", "#5NT = King Ask (대답은 6♣부터 같은 순서)"] },
+  { id: "quant", cat: "slam", t: 1, face: "4NT", name: "Quantitative 4NT",
+    when: "NT 오프닝 뒤 핏 없이 4NT = 블랙우드가 아니라 6NT 초대예요.",
+    auc: "1NT – [[4NT]]", title: "파트너가 Quantitative 4NT를 불렀을 때 오프너",
+    rows: ["15|최소|패스|", "16|중간|5수트 / 6NT|좋은 5장이면 보여줌", "17|최대|6NT|", "#5NT", "|1NT – 5NT|6NT 강제, 7NT 초대|최대면 7NT"] },
+  { id: "cue", cat: "slam", t: 1, face: "4♣", name: "컨트롤 비드",
+    when: "트럼프가 정해진 뒤 슬램 관심이 있을 때, 컨트롤 있는 수트를 싼 것부터 불러요.",
+    auc: "1♠ – 3♠ – [[4♣]]", title: "컨트롤 비드 기준", cols: "컨트롤|가진 것|비드|메모",
+    rows: ["1차|A 또는 보이드|그 수트|싼 것부터", "2차|K 또는 싱글톤|그 수트|약속에 따라 섞어서", "건너뜀||다음 수트|건너뛴 수트엔 컨트롤 없음", "관심 없음||4♠|사인오프",
+      "#방식 비교", "|올드 패션드|1차 먼저, 2차는 나중|", "|이탈리안|1·2차 섞어서 싼 것부터|"] },
+  { id: "gerber", cat: "slam", t: 2, face: "4♣", name: "거버",
+    when: "파트너가 1NT나 2NT를 연 뒤 점프 4♣로 에이스 수를 물어요.",
+    auc: "1NT – [[4♣]]", title: "파트너가 거버 4♣를 불렀을 때 내 대답", cols: "에이스||비드|메모",
+    rows: ["0 또는 4||4♦|", "1||4♥|", "2||4♠|", "3||4NT|", "#5♣ = King Ask (대답은 5♦부터 같은 순서)"] },
+  { id: "serious", cat: "slam", t: 2, face: "3NT", name: "시리어스 3NT",
+    when: "게임 포싱 메이저 핏이 3레벨에서 확인되면 3NT = 진지한 슬램 관심, 3NT를 건너뛴 큐비드 = 약한 관심.",
+    auc: "1♠ – 2♣ – 2♠ – 3♠ – [[3NT]]", title: "시리어스 3NT 뒤", chk: true,
+    rows: ["강함|진지한 관심|3NT|", "중간|약한 관심|4♣ / 4♦ / 4♥|큐비드", "최소|관심 없음|4♠|"] },
+  { id: "lasttrain", cat: "slam", t: 3, face: "4♥", name: "라스트 트레인",
+    when: "트럼프 게임 바로 아래 비드 = 그 수트 정보가 아니라 '조금 더 슬램 관심 있음'.",
+    auc: "… 3♠ – 4♣ – 4♦ – [[4♥]]", title: "라스트 트레인 뒤 파트너 (♠ 트럼프)",
+    rows: ["최소||4♠|", "추가 가치||4NT / 5레벨|슬램 진행"] },
+  { id: "gsf", cat: "slam", t: 2, face: "5NT", name: "그랜드 슬램 포스",
+    when: "4NT 없이 바로 5NT = 트럼프 AKQ 중 2장이 있으면 7로 가라.",
+    auc: "1♥ – 3♥ – [[5NT]]", title: "파트너가 그랜드 슬램 포스를 했을 때", cols: "트럼프 아너||비드|메모",
+    rows: ["AKQ 중 2장||7트럼프|", "1장 이하||6트럼프|", "#RKCB 뒤 5NT는 King Ask"] },
+  { id: "q5nt", cat: "slam", t: 3, face: "5NT", name: "5NT 픽어슬램",
+    when: "5NT로 '6레벨에서 맞는 슬램을 골라달라'고 해요. 수트 몇 개를 후보로 둘 때.",
+    auc: "… [[5NT]]", title: "5NT의 여러 의미", cols: "상황|의미|대답|메모",
+    rows: ["4NT 없이, 트럼프 확정|그랜드 슬램 포스|7 / 6|", "RKCB 뒤|King Ask|6레벨|", "NT 오프닝 뒤|Quantitative, 7NT 초대|6NT / 7NT|", "핏 미확정|픽어슬램|6레벨 긴 수트|"] },
+  { id: "lightner", cat: "slam", t: 2, face: "X", x: true, name: "라이트너 더블",
+    when: "상대 슬램에 X = 특이한 리드를 해달라 (대개 더미가 처음 부른 수트). 트럼프나 안 나온 수트는 리드하지 말 것.",
+    auc: "1♠ – 2♦ – 4♠ – 6♠ – [[X]]", title: "라이트너 X 뒤 파트너 리드",
+    rows: ["|더미가 부른 수트|그 수트 리드|대개 보이드 러프 노림", "|안 나온 수트|리드하지 않음|", "|트럼프|리드하지 않음|"] },
+  { id: "leadx", cat: "slam", t: 3, face: "X", x: true, name: "리드 지시 더블",
+    when: "상대 인위적 비드(스테이맨, 트랜스퍼, 큐비드)에 X = 그 수트를 리드해달라.",
+    auc: "1NT – 2♣ – [[X]]", title: "리드 지시 X",
+    rows: ["|좋은 ♣ (KQJxx)|X|♣ 리드 요청", "|♣ 별로|패스|"] },
+  { id: "minorwood", cat: "slam", t: 3, face: "4♣", name: "마이너우드",
+    when: "마이너 핏이 확인된 뒤 4♣(♣ 트럼프) 또는 4♦(♦ 트럼프)로 키카드를 물어요. 4NT보다 낮아 5레벨에서 멈출 수 있어요.",
+    auc: "1♣ – 2♣ – 3♣ – [[4♣]]", title: "마이너우드 대답 (1430 순서)", chk: true,
+    rows: ["1 또는 4||첫 단계|", "0 또는 3||둘째 단계|", "2|Q 없음|셋째 단계|", "2|Q 있음|넷째 단계|"] },
+  { id: "kickback", cat: "slam", t: 3, face: "4♦", name: "킥백",
+    when: "트럼프 바로 위 수트의 4레벨 비드를 Key Card Ask으로 써요 (♣ → 4♦, ♦ → 4♥, ♥ → 4♠, ♠ → 4NT).",
+    auc: "1♦ – 2♣ – 3♣ – [[4♦]]", title: "킥백 대답 (1430 순서)", chk: true,
+    rows: ["1 또는 4||첫 단계|", "0 또는 3||둘째 단계|", "2|Q 없음|셋째 단계|", "2|Q 있음|넷째 단계|"] },
+  { id: "exclusion", cat: "slam", t: 3, face: "5♦", name: "익스클루전 RKCB",
+    when: "트럼프 확정 뒤 보이드 수트를 5레벨 점프로 부르면, 그 수트를 뺀 키카드를 물어요.",
+    auc: "1♥ – 3♥ – [[5♦]]", title: "익스클루전 대답 (♦ 제외)", chk: true,
+    rows: ["0||첫 단계 (5♥)|", "1||둘째 단계|", "2|Q 없음|셋째 단계|", "2|Q 있음|넷째 단계|"] },
+  { id: "dopi", cat: "slam", t: 3, face: "DOPI", name: "DOPI · ROPI · DEPO",
+    when: "RKCB 4NT에 상대가 개입하면 X·패스로 키카드 수를 알려요.", auc: "4NT – (5♦) – ?",
+    title: "상대 개입 뒤 키카드 대답", cols: "방식|상황|비드|뜻",
+    rows: ["DOPI|상대 오버콜|X|0", "DOPI|상대 오버콜|패스|1", "DOPI|상대 오버콜|다음 단계|2", "ROPI|상대 X|XX|0", "ROPI|상대 X|패스|1", "DEPO|상대 오버콜|X|짝수 (0·2)", "DEPO|상대 오버콜|패스|홀수 (1·3)"] },
+
+  /* ───────── 핸드 평가 · 기준표 ───────── */
+  { id: "points", cat: "eval", t: 1, face: "HCP", name: "점수로 보는 계약",
+    when: "두 손 합계 점수로 어느 레벨까지 갈지 대략 정해요.", auc: "A 4 · K 3 · Q 2 · J 1",
+    title: "합계 점수 기준", cols: "합계|핏|계약|메모",
+    rows: ["~22||파트스코어|", "23–24||게임 초대|", "25–32|메이저 핏 또는 밸런스|3NT / 4♥ / 4♠|게임", "28–29|마이너 핏|5♣ / 5♦|", "33–36|아무|스몰 슬램 (6)|", "37+|아무|그랜드 슬램 (7)|"] },
+  { id: "rules", cat: "eval", t: 1, face: "20", name: "Rule of 20 · 22 · 15",
+    when: "경계선 핸드(11점 안팎)를 오프닝할지 정하는 규칙.", auc: "♠ AKxxx ♥ KQxxx ♦ xx ♣ x → 9 + 10 = 19",
+    title: "오프닝 판단 규칙", cols: "규칙|계산|기준|메모",
+    rows: ["Rule of 20|HCP + 가장 긴 두 수트 장수|20 이상|1·2번째 자리", "Rule of 22|Rule of 20 + 퀵트릭|22 이상 (퀵트릭 2+)|더 엄격", "Rule of 15|HCP + ♠ 장수|15 이상|4번째 자리"] },
+  { id: "ltc", cat: "eval", t: 2, face: "LTC", name: "Losing Trick Count",
+    when: "핏이 있을 때 분포까지 반영해 레벨을 정하는 방법.", auc: "♠ AKxx = 1루저 · ♥ Qxx = 2루저 · ♦ x = 1루저",
+    title: "LTC 계산", cols: "항목|내용|결과|메모",
+    rows: ["루저 세기|각 수트 위 3장 중 A·K·Q가 아닌 카드|수트당 최대 3|", "오프닝 평균||7루저|", "트릭 예상|24 − (내 루저 + 파트너 루저)|핏 수트 트릭 수|",
+      "#파트너 1메이저(7루저)에 4장 서포트", "9루저||2레벨|", "8루저||3레벨|", "7루저||4레벨|"] },
+  { id: "qt", cat: "eval", t: 2, face: "QT", name: "퀵트릭 · 컨트롤",
+    when: "슬램과 강한 오프닝(2♣) 판단에 쓰는 빠른 트릭 계산.", auc: "AK = 2 · AQ = 1½ · A = 1 · KQ = 1 · Kx = ½",
+    title: "퀵트릭과 컨트롤", cols: "카드|퀵트릭|컨트롤|메모",
+    rows: ["AK|2|3|", "AQ|1½|2|", "A|1|2|", "KQ|1|1|", "Kx|½|1|"] }
+];
+
+// 영어 이름 (검색용)
+const EN = {
+  "1major": "1 major opening", "1minor": "1 minor opening short club", "1nt": "1NT opening notrump", "2c": "strong 2C two clubs waiting positive",
+  weak2: "weak two feature ask", "2nt": "2NT opening", pre3: "preempt preemptive opening", seat34: "third fourth seat light opening rule of 15",
+  ogust: "Ogust", secneg: "second negative cheaper minor", kokish: "Kokish relay", multi: "Multi 2D", muiderberg: "Muiderberg", wilkosz: "Wilkosz",
+  flannery: "Flannery", gambling: "Gambling 3NT", namyats: "Namyats", weaknt: "weak NT 12-14 notrump range",
+  stayman: "Stayman", jacoby: "Jacoby transfer superaccept", texas: "Texas transfer", smolen: "Smolen", garbage: "Garbage Stayman", crawling: "Crawling Stayman",
+  mintr: "minor suit transfers four suit transfers", minstay: "Minor suit Stayman", puppet: "Puppet Stayman", muppet: "Muppet Stayman",
+  j2nt: "Jacoby 2NT", splinter: "Splinter", "2over1": "2/1 two over one game forcing GF", "1ntf": "1NT forcing semi-forcing",
+  jsresp: "jump shift responder strong weak", bergen: "Bergen raises", revbergen: "Reverse Bergen", drury: "Drury reverse two-way original",
+  inverted: "Inverted minor raises", twalsh: "Transfer Walsh 1C transfer responses",
+  reverse: "Reverse", ojs: "opener jump shift", nmf: "NMF new minor forcing", checkback: "Checkback Stayman", xyz: "XYZ two-way checkback new minor",
+  "4sf": "FSF fourth suit forcing", tsf: "third suit forcing", ingberman: "Ingberman", helpsuit: "help suit game try long suit counter",
+  ssgt: "short suit game try", ggt: "2NT general game try", fast: "fast arrival slow arrival", bart: "BART", wolff: "Wolff signoff", gazzilli: "Gazzilli",
+  overcall: "overcall advancer cue bid raise", tox: "takeout double", "1ntoc": "1NT overcall direct", michaels: "Michaels cue bid", u2nt: "Unusual 2NT",
+  wjo: "weak jump overcall", balance: "balancing 1NT seat", responsive: "responsive double", dont: "DONT", capp: "Cappelletti Hamilton", landy: "Landy",
+  mlandy: "Multi-Landy", meckwell: "Meckwell", brozel: "Brozel", woolsey: "Woolsey", sandwich: "Sandwich 1NT", transadv: "transfer advances",
+  elc: "equal level conversion", vspre: "defense against preempts weak two lebensohl", leaping: "Leaping Michaels", nonleap: "Non-leaping Michaels",
+  vs2c: "defense strong 2C", vsmulti: "defense Multi 2D",
+  negx: "negative double", supx: "support double support redouble", redbl: "redouble", jordan: "Jordan Truscott 2NT", bromad: "BROMAD",
+  transx: "transfer responses after double", lebensohl: "Lebensohl", tleb: "Transfer Lebensohl", rubensohl: "Rubensohl",
+  runout: "runout escape 1NT doubled", reopen: "reopening double trap pass", uvu: "unusual over unusual", lott: "Law of Total Tricks LoTT",
+  penx: "penalty double cooperative card showing", sos: "SOS redouble business redouble", sac: "sacrifice", fitjump: "fit showing jump",
+  mixed: "mixed raise", maximal: "maximal double", nfb: "negative free bid", goodbad: "good bad 2NT", scramble: "scrambling 2NT",
+  western: "western cue bid stopper ask", fpass: "forcing pass",
+  rkcb: "RKCB roman key card blackwood 1430 3014 queen ask king ask", bw: "Blackwood", quant: "quantitative 4NT", cue: "control bidding cue bid",
+  gerber: "Gerber", serious: "serious 3NT non-serious", lasttrain: "last train", gsf: "grand slam force", q5nt: "5NT pick a slam quantitative",
+  lightner: "Lightner double", leadx: "lead directing double", minorwood: "Minorwood", kickback: "Kickback", exclusion: "Exclusion RKCB",
+  dopi: "DOPI ROPI DEPO", points: "HCP high card points game slam", rules: "rule of 20 22 15", ltc: "LTC losing trick count", qt: "quick tricks controls"
+};
+// 이어서 볼 카드
+const NTDEF = ["dont", "capp", "landy", "mlandy", "meckwell", "brozel", "woolsey"];
+const REL = {
+  "1nt": ["stayman", "jacoby", "texas", "mintr", "quant", "gerber"], "1major": ["j2nt", "splinter", "bergen", "1ntf", "2over1", "drury"],
+  "1minor": ["inverted", "nmf", "twalsh"], "2c": ["secneg", "kokish"], weak2: ["ogust"], "2nt": ["puppet", "muppet", "gerber"],
+  pre3: ["lott"], seat34: ["drury", "rules"], weaknt: ["runout"], multi: ["vsmulti"],
+  stayman: ["smolen", "garbage", "crawling", "puppet"], jacoby: ["texas", "smolen"], texas: ["rkcb"], smolen: ["stayman", "jacoby"],
+  garbage: ["crawling"], crawling: ["garbage"], mintr: ["minstay"], minstay: ["mintr"], puppet: ["muppet", "stayman"], muppet: ["puppet"],
+  j2nt: ["splinter", "cue", "rkcb"], splinter: ["j2nt", "cue"], "2over1": ["1ntf", "fast", "serious"], "1ntf": ["2over1", "bart", "gazzilli"],
+  jsresp: ["ojs"], bergen: ["revbergen", "bromad"], revbergen: ["bergen"], drury: ["seat34"], inverted: ["western"], twalsh: ["1minor"],
+  reverse: ["ingberman", "ojs"], ojs: ["reverse"], nmf: ["checkback", "xyz", "4sf"], checkback: ["nmf", "xyz"], xyz: ["nmf", "checkback"],
+  "4sf": ["nmf", "tsf"], tsf: ["4sf"], ingberman: ["reverse"], helpsuit: ["ssgt", "ggt"], ssgt: ["helpsuit", "ggt"], ggt: ["helpsuit", "ssgt"],
+  fast: ["serious", "cue"], bart: ["1ntf"], gazzilli: ["1ntf"], wolff: ["checkback"],
+  overcall: ["wjo", "1ntoc", "transadv"], tox: ["responsive", "elc", "scramble", "redbl"], "1ntoc": ["stayman", "jacoby", "balance"],
+  michaels: ["u2nt", "uvu", "leaping"], u2nt: ["michaels", "uvu", "sandwich"], wjo: ["overcall"], balance: ["1ntoc", "reopen"],
+  responsive: ["tox", "penx"], sandwich: ["u2nt"], transadv: ["overcall"], elc: ["tox"],
+  vspre: ["lebensohl", "leaping", "nonleap"], leaping: ["nonleap", "michaels"], nonleap: ["leaping"], vs2c: ["2c"], vsmulti: ["multi"],
+  negx: ["supx", "reopen", "nfb"], supx: ["negx"], redbl: ["jordan", "bromad", "transx"], jordan: ["redbl", "bromad"], bromad: ["jordan", "bergen"],
+  transx: ["redbl"], lebensohl: ["tleb", "rubensohl", "vspre"], tleb: ["lebensohl", "rubensohl"], rubensohl: ["lebensohl", "tleb"],
+  runout: ["sos", "weaknt"], reopen: ["negx", "balance"], uvu: ["michaels", "u2nt"], lott: ["sac", "penx"], penx: ["tox", "negx", "responsive", "supx", "lightner"],
+  sos: ["runout", "redbl"], sac: ["lott"], fitjump: ["mixed"], mixed: ["fitjump"], maximal: ["helpsuit"], nfb: ["negx"], goodbad: ["lott"],
+  scramble: ["tox"], western: ["inverted"], fpass: ["penx"],
+  rkcb: ["bw", "minorwood", "kickback", "exclusion", "dopi", "gsf"], bw: ["rkcb", "gerber"], quant: ["q5nt", "1nt"], cue: ["serious", "lasttrain", "splinter"],
+  gerber: ["bw", "quant"], serious: ["cue", "lasttrain"], lasttrain: ["cue"], gsf: ["q5nt", "rkcb"], q5nt: ["gsf", "quant"],
+  lightner: ["leadx", "penx"], leadx: ["lightner"], minorwood: ["kickback", "rkcb"], kickback: ["minorwood", "rkcb"], exclusion: ["rkcb"], dopi: ["rkcb"],
+  points: ["rules", "ltc"], rules: ["seat34", "ltc"], ltc: ["points"], qt: ["2c"]
+};
+NTDEF.forEach(id => { REL[id] = NTDEF.filter(x => x !== id); });
+
+const parseRow = s => s.startsWith("#") ? { sec: s.slice(1) } : s.split("|");
+const suit = s => (s || "").replace(/[♥♦]/g, m => `<span class="r s">${m}</span>`).replace(/[♠♣]/g, m => `<span class="s">${m}</span>`);
+const byId = Object.fromEntries(C.map(c => [c.id, c]));
+let cat = "all", tierMode = "all";
+
+function pillGroup(boxId, items, current, onPick) {
+  const box = document.getElementById(boxId);
+  items.forEach(([k, label]) => {
+    const b = document.createElement("button");
+    b.className = "pill"; b.textContent = label; b.dataset.k = k;
+    b.setAttribute("aria-pressed", k === current ? "true" : "false");
+    b.onclick = () => { box.querySelectorAll(".pill").forEach(p => p.setAttribute("aria-pressed", p.dataset.k === k)); onPick(k); };
+    box.appendChild(b);
+  });
+}
+pillGroup("cats", [["all", "전체"], ...CATS, ["dbl", "더블 · 리더블"]], "all", k => { cat = k; renderCards(); });
+let sys = "sayc";
+try { const v = localStorage.getItem("bb-sys"); if (v === "gf" || v === "sayc") sys = v; } catch (e) {}
+const SYS_NAME = { sayc: "SAYC", gf: "2/1 GF" };
+pillGroup("sys", [["sayc", "SAYC"], ["gf", "2/1 GF"]], sys, k => setSys(k));
+function setSys(k) {
+  sys = k;
+  try { localStorage.setItem("bb-sys", k); } catch (e) {}
+  document.querySelectorAll("#sys .pill").forEach(p => p.setAttribute("aria-pressed", p.dataset.k === k));
+  updateFilterCount();
+  const id = location.hash.slice(1);
+  if (dlg.open && byId[id]) openCard(id);
+}
+const isDbl = c => c.x || /^X{1,2}$/.test(c.face);
+pillGroup("tiers", [["all", "모두"], ["t1", "자주 쓰는 것만"], ["no3", "심화 빼고"]], "all", k => { tierMode = k; renderCards(); });
+
+function visible(c, q) {
+  if (tierMode === "t1" && c.t !== 1) return false;
+  if (tierMode === "no3" && c.t === 3) return false;
+  return !q || (c.face + " " + c.name + " " + c.id + " " + (EN[c.id] || "") + " " + c.when).toLowerCase().includes(q);
+}
+const TIER_NOTE = {
+  1: "게임에서 거의 매번 만나는 비딩",
+  2: "많은 파트너십이 쓰거나, 상대가 쓰면 알아야 하는 것",
+  3: "방식이 여러 가지라 파트너와 정해서 쓰는 것"
+};
+function cardHtml(c) {
+  const long = c.face.replace(/\s/g, "").length > 3;
+  return `<button class="bid" data-id="${c.id}"><span class="face${long ? " long" : ""}">${suit(c.face)}</span><span class="name">${c.name}</span></button>`;
+}
+function renderCards() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const box = document.getElementById("cards");
+  let html = "";
+  [1, 2, 3].forEach(t => {
+    let groups = "";
+    CATS.forEach(([k, label]) => {
+      if (cat !== "all" && cat !== "dbl" && cat !== k) return;
+      const list = C.filter(c => c.t === t && c.cat === k && visible(c, q) && (cat !== "dbl" || isDbl(c)));
+      if (!list.length) return;
+      groups += `<section class="group"><h3>${label}<small>${list.length}장</small></h3><div class="grid">${list.map(cardHtml).join("")}</div></section>`;
+    });
+    if (groups) html += `<section class="tier-sec"><div class="tier-head"><h2>${t === 1 ? `<span class="hl">${TIERS[t]}</span>` : TIERS[t]}</h2><p>${TIER_NOTE[t]}</p></div>${groups}</section>`;
+  });
+  box.innerHTML = html || `<p class="empty">“${q.replace(/[<>&"]/g, "")}”에 맞는 카드가 없어요. 다른 이름으로 찾아보거나 보기를 ‘모두’로 바꿔보세요.</p>`;
+  box.querySelectorAll(".bid").forEach(b => b.onclick = () => { location.hash = b.dataset.id; });
+  updateFilterCount();
+}
+/* 휴대폰 필터 접기 */
+function updateFilterCount() {
+  const n = (cat !== "all") + (tierMode !== "all") + (sys !== "sayc");
+  const btn = document.getElementById("filter-btn");
+  document.getElementById("filter-count").textContent = n ? ` · ${n}` : "";
+  btn.classList.toggle("on", n > 0);
+}
+document.getElementById("filter-btn").onclick = () => {
+  const bar = document.getElementById("bar");
+  const open = bar.classList.toggle("open");
+  document.getElementById("filter-btn").setAttribute("aria-expanded", open);
+}
+document.getElementById("q").addEventListener("input", renderCards);
+
+const dlg = document.getElementById("dlg");
+function openCard(id) {
+  const base = byId[id]; if (!base) return;
+  const c = base.sys && base.sys[sys] ? { ...base, ...base.sys[sys] } : base;
+  const cols = (c.cols || COLS).split("|");
+  const catLabel = CATS.find(x => x[0] === c.cat)[1];
+  const auction = suit(c.auc).replace(/\[\[(.+?)\]\]/, "<mark>$1</mark>");
+  const body = c.rows.map(parseRow).map(r => r.sec
+    ? `<tr class="sec"><td colspan="4">${suit(r.sec)}</td></tr>`
+    : `<tr><td class="pts" data-l="${cols[0]}">${suit(r[0])}</td><td class="cond" data-l="${cols[1]}">${suit(r[1])}</td><td class="call">${r[2] ? `<span class="chip">${suit(r[2])}</span>` : ""}</td><td class="note">${suit(r[3])}</td></tr>`).join("");
+  document.getElementById("dlg-body").innerHTML = `
+    <div class="dlg-head">
+      <span class="face">${suit(c.face)}</span>
+      <div class="dlg-t">
+        <h3 id="dlg-title">${c.name}</h3>
+        <span class="cat">${catLabel} · ${TIERS[c.t]}</span>
+        ${base.sys ? `<div class="seg" role="group" aria-label="시스템에 따라 달라요">${["sayc", "gf"].map(k => `<button class="pill" data-sys="${k}" aria-pressed="${k === sys}">${SYS_NAME[k]}</button>`).join("")}</div>` : ""}
+      </div>
+      <button class="close" aria-label="닫기">✕</button>
+    </div>
+    <p class="when"><b>언제 쓰나</b>${suit(c.when)}<span class="auction ex"><small>예시</small>${auction}</span></p>
+    <p class="tbl-title">${suit(c.title)}</p>
+    <div class="tbl"><table class="${c.cols ? "lab" : ""}">
+      <thead><tr>${cols.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+      <tbody>${body}</tbody>
+    </table></div>
+    ${c.chk ? `<p class="check">방식이 여러 가지인 컨벤션이에요. 대표 형태로 적었으니 파트너와 약속을 꼭 확인하세요.</p>` : ""}
+    ${(REL[id] || []).filter(r => byId[r]).length ? `<div class="rel"><p class="tbl-title">이어서 볼 카드</p><div class="rel-list">${REL[id].filter(r => byId[r]).map(r => `<button class="rel-btn" data-id="${r}"><span class="rf">${suit(byId[r].face)}</span>${byId[r].name}</button>`).join("")}</div></div>` : ""}`;
+  dlg.querySelectorAll("[data-sys]").forEach(b => b.onclick = () => setSys(b.dataset.sys));
+  dlg.querySelectorAll(".rel-btn").forEach(b => b.onclick = () => { location.hash = b.dataset.id; });
+  dlg.querySelector(".close").onclick = closeCard;
+  if (!dlg.open) dlg.showModal();
+  dlg.scrollTop = 0;
+}
+function closeCard() { if (location.hash) location.hash = ""; if (dlg.open) dlg.close(); }
+dlg.addEventListener("click", e => { if (e.target === dlg) closeCard(); });
+dlg.addEventListener("cancel", e => { e.preventDefault(); closeCard(); });
+function route() {
+  const id = location.hash.slice(1);
+  if (byId[id]) openCard(id); else if (dlg.open) dlg.close();
+}
+window.addEventListener("hashchange", route);
+
+/* phone tabs */
+function setTab(t) {
+  document.body.dataset.tab = t;
+  document.getElementById("tab-cards").setAttribute("aria-pressed", t === "cards");
+  document.getElementById("tab-finder").setAttribute("aria-pressed", t === "finder");
+}
+document.getElementById("tab-cards").onclick = () => setTab("cards");
+document.getElementById("tab-finder").onclick = () => setTab("finder");
+setTab("cards");
+
+/* hand finder */
+let mode = "open";
+const ids = ["hcp", "ls", "lh", "ld", "lc"];
+const val = id => { const v = parseInt(document.getElementById(id).value, 10); return isNaN(v) ? 0 : v; };
+document.querySelectorAll(".step button").forEach(b => b.onclick = () => {
+  const el = document.getElementById(b.dataset.t);
+  el.value = Math.max(+el.min, Math.min(+el.max, val(b.dataset.t) + +b.dataset.d));
+  solve();
+});
+ids.forEach(id => document.getElementById(id).addEventListener("input", solve));
+function setMode(m) {
+  mode = m;
+  document.getElementById("mode-open").setAttribute("aria-pressed", m === "open");
+  document.getElementById("mode-1nt").setAttribute("aria-pressed", m === "1nt");
+  solve();
+}
+document.getElementById("mode-open").onclick = () => setMode("open");
+document.getElementById("mode-1nt").onclick = () => setMode("1nt");
+
+function isBalanced(L) {
+  const k = [...L].sort((a, b) => b - a).join("");
+  return k === "4333" || k === "4432" || k === "5332";
+}
+function openingCall(h, S, H, D, Cl) {
+  const L = [S, H, D, Cl], bal = isBalanced(L);
+  const two = [...L].sort((a, b) => b - a);
+  const r20 = h + two[0] + two[1] >= 20;
+  if (bal && h >= 20 && h <= 21) return ["2NT", "20–21점 밸런스", "2nt"];
+  if (bal && h >= 24 && h <= 25) return ["3NT", "24–25점 밸런스 → 3NT 오픈", "2nt"];
+  if (h >= 22 || (!bal && h >= 21)) return ["2♣", bal ? (h <= 23 ? "22–23점 밸런스 → 2♣ 후 2NT" : h <= 27 ? "26–27점 밸런스 → 2♣ 후 3NT" : "28점 이상 밸런스 → 2♣ 후 4NT") : `${h}점 언밸런스 → 강한 2♣ (트릭 수도 확인)`, "2c"];
+  if (bal && h >= 15 && h <= 17) return ["1NT", "15–17점 밸런스" + (S === 5 || H === 5 ? " (5장 메이저가 있어도 1NT 가능)" : ""), "1nt"];
+  if (h >= 12 || (h === 11 && r20)) {
+    const why = h >= 12 ? `${h}점, 오프닝 가능` : "11점이지만 Rule of 20 충족";
+    if (S >= 5 && S >= H) return ["1♠", `${why}, ♠ ${S}장`, "1major"];
+    if (H >= 5) return ["1♥", `${why}, ♥ ${H}장`, "1major"];
+    if (D > Cl || (D === Cl && D >= 4)) return ["1♦", `${why}, 5장 메이저 없음, ♦가 더 길거나 4-4`, "1minor"];
+    return ["1♣", `${why}, 5장 메이저 없음` + (D === Cl ? ", 3-3은 1♣" : ""), "1minor"];
+  }
+  if (h >= 4 && h <= 9) {
+    const names = ["♠", "♥", "♦", "♣"];
+    const i = L.findIndex(x => x >= 7);
+    if (i >= 0) return [`${L[i] >= 8 ? 4 : 3}${names[i]}`, `${h}점, ${names[i]} ${L[i]}장 Preempt`, "pre3"];
+  }
+  if (h >= 5 && h <= 10) {
+    if (S === 6) return ["2♠", `${h}점, ♠ 6장 위크 투`, "weak2"];
+    if (H === 6) return ["2♥", `${h}점, ♥ 6장 위크 투`, "weak2"];
+    if (D === 6) return ["2♦", `${h}점, ♦ 6장 위크 투`, "weak2"];
+  }
+  return ["패스", h < 12 ? `${h}점은 오프닝하기에 부족해요` : "맞는 오프닝이 없어요", h === 11 || h === 10 ? "rules" : null];
+}
+function after1NT(h, S, H, D, Cl) {
+  if ((S >= 6 || H >= 6) && h >= 10 && h <= 15)
+    return [S >= H ? "4♥" : "4♦", `6장 메이저, 게임 점수 → 텍사스 (${S >= H ? "♠" : "♥"}로 이동)`, "texas"];
+  if ((S === 5 && H === 4 || H === 5 && S === 4) && h >= 10)
+    return ["2♣", `5-4 메이저, 게임 점수 → 스테이맨 후 2♦가 나오면 스몰렌`, "smolen"];
+  if (S >= 5 || H >= 5) {
+    const sp = S >= H;
+    const call = sp ? "2♥" : "2♦";
+    const next = h <= 7 ? "완성되면 패스" : h <= 9 ? "다음에 2NT 또는 3레벨로 초대" : "다음에 3NT 또는 4레벨";
+    return [call, `${sp ? "♠" : "♥"} ${sp ? S : H}장 → 제이코비 트랜스퍼. ${next}`, "jacoby"];
+  }
+  if ((S === 4 || H === 4) && h >= 8) return ["2♣", "8점 이상, 4장 메이저 → 스테이맨", "stayman"];
+  if (S === 4 && H === 4 && Cl <= 1 && h <= 7) return ["2♣", "약하지만 4-4 메이저, ♣ 짧음 → 가비지 스테이맨", "garbage"];
+  if (h <= 7) return ["패스", "0–7점, 게임 가능성이 없어요", "1nt"];
+  if (h <= 9) return ["2NT", "8–9점, 게임 초대", "1nt"];
+  if (h <= 15) return ["3NT", "10–15점, 게임", "1nt"];
+  if (h <= 17) return ["4NT", "16–17점, 6NT 초대 (Quantitative)", "quant"];
+  if (h <= 19) return ["6NT", "18–19점, 스몰 슬램", "1nt"];
+  return ["4♣ → 7NT", "20점 이상, 거버로 에이스를 확인하고 그랜드 슬램", "gerber"];
+}
+function solve() {
+  const h = val("hcp"), S = val("ls"), H = val("lh"), D = val("ld"), Cl = val("lc");
+  const total = S + H + D + Cl;
+  const sum = document.getElementById("sum");
+  sum.textContent = total === 13 ? "장수 합 13장 ✓" : `장수 합이 ${total}장이에요. 13장이 되게 맞춰주세요.`;
+  sum.className = "sum" + (total === 13 ? "" : " warn");
+  const [call, why, link] = mode === "open" ? openingCall(h, S, H, D, Cl) : after1NT(h, S, H, D, Cl);
+  const box = document.getElementById("answer");
+  box.innerHTML = `<span class="call">${suit(call)}</span><p>${suit(why)}</p>` +
+    (link ? `<button class="go" data-id="${link}">${byId[link].name} 카드 보기</button>` : "");
+  const go = box.querySelector(".go");
+  if (go) go.onclick = () => { location.hash = go.dataset.id; };
+}
+
+renderCards();
+solve();
+route();
+
+/* 웹앱: 오프라인 저장 */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+</body>
+</html>
