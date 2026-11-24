@@ -806,6 +806,37 @@ const C = [
     rows: ["5+||패스|1NT X 수비", "0–4|5장 이상 수트|2레벨 그 수트|도피, 비포싱", "0–4|밸런스|패스|도피할 수트 없음",
       "#상대가 도망가면", "|그 수트 4장 이상|X|페널티", "|자기 수트 5장 이상|새 수트|경쟁, 비포싱",
       "#더블러", "|파트너가 도피한 뒤|패스|다시 고르지 않음"] },
+  { id: "vsresp", cat: "def", t: 1, face: "1♥ 1NT → ?", name: "상대가 응답한 뒤 개입",
+    when: "상대 오프닝과 응답이 나온 뒤 개입하면, 상대가 이미 점수를 보여줬으니 더 조심해요. 응답이 약하면(1NT) 적극적으로, 게임 포싱(2/1)이면 리드와 희생을 위해서만 개입해요.",
+    auc: "1♥ – 패스 – 1NT – [[?]]", title: "상대 응답 뒤 내 개입", chk: true,
+    rows: ["#1♥ – 패스 – 1NT – ?", "12+|♥ 짧음, 나머지 3장 이상|X|테이크아웃", "8–16|좋은 5장 이상|2레벨 수트|일반 오버콜",
+      "|두 마이너 5-5|2NT|언유주얼", "|♠ + 마이너 5-5|2♥|마이클스",
+      "#1♥ – 패스 – 2♣ (2/1 게임 포싱) – ?", "|좋은 수트, 리드 지시|2♦ / 2♠|가볍게, 희생 기회", "|♦·♠ 두 수트|X|테이크아웃 (약속)", "|그 외|패스|상대는 게임을 감",
+      "#1♥ – 패스 – 1♠ – ?", "|샌드위치 1NT 카드 참고||"] },
+  { id: "vsstay", cat: "def", t: 1, face: "1NT 2♣ → ?", name: "상대 Stayman·Transfer에 개입",
+    when: "상대 1NT 뒤 Stayman·Transfer는 인위적이라, 그 비드에 X하면 그 수트를 리드해 달라는 뜻이에요. 개입은 리드와 희생을 위한 것이니 좋은 수트로만 해요.",
+    auc: "1NT – 2♣ – [[?]]", title: "상대 1NT 뒤 Stayman·Transfer에 내 개입", chk: true,
+    rows: ["#1NT – 2♣ (Stayman) – ?", "|좋은 ♣ (KQJxx 등)|X|♣ 리드 요청", "|좋은 5–6장 수트|2레벨 수트|실제 수트, 가볍게", "|그 외|패스|",
+      "#1NT – 2♦ (♥ 트랜스퍼) – ?", "|좋은 ♦|X|♦ 리드 요청", "|두 수트|2♥|큐비드, 약속", "|좋은 5장 이상 다른 수트|2♠ / 3♣|실제 수트",
+      "#트랜스퍼 완성 뒤 (1NT – 2♦ – 2♥ – ?)", "|♥ 짧음, 나머지 수트 지원|X|테이크아웃", "|좋은 수트|오버콜|"] },
+  { id: "vsweaknt", cat: "def", t: 2, face: "1NT", name: "상대 Weak NT(12–14) 방어",
+    when: "상대 1NT가 12–14면 우리 쪽 점수가 많을 수 있어요. 직접 자리 X는 15점 이상 페널티이고, 수트 개입은 Strong NT보다 조금 더 적극적으로 해요.",
+    auc: "1NT (12–14) – [[?]]", title: "상대 Weak NT 뒤 내 개입", chk: true,
+    rows: ["15+|밸런스|X|페널티", "약 8–14|좋은 5장 이상|2레벨 수트|일반 오버콜 또는 1NT 방어 컨벤션",
+      "#파트너 X 뒤", "5+||패스|", "0–4|5장 이상|2레벨 도피|",
+      "#4번째 자리 (1NT – 패스 – 패스 – ?)", "12+|밸런스|X|페널티, 조금 가볍게", "|좋은 수트|오버콜|"] },
+  { id: "delayed", cat: "def", t: 2, face: "패스 → X", name: "늦은 개입",
+    when: "처음에 패스한 뒤 나중에 X나 오버콜하면, 처음 기회에 못 한 이유가 있는 손이에요. 점수는 있는데 모양이 안 맞았거나, 수트가 약했거나, 이미 패스한 손이라 강하지 않아요.",
+    auc: "1♥ – 패스 – 1NT – 패스 – 패스 – [[?]]", title: "패스한 뒤 내 개입", chk: true,
+    rows: ["#상대가 1NT로 멈춘 뒤", "10+|♥ 짧음|X|테이크아웃", "|좋은 5장 이상|2레벨 수트|",
+      "#상대가 2레벨에서 멈춘 뒤", "|상대 레이즈 뒤 밸런싱 카드 참고||",
+      "#이미 패스한 손", "최대 11|안 나온 수트|X / 오버콜|오프닝은 안 되는 손", "|두 수트|점프 등|약속"] },
+  { id: "vsart", cat: "def", t: 2, face: "X", x: true, name: "상대 인위적 비드에 X",
+    when: "상대가 인위적 비드를 하면, 그 비드에 X = 그 수트를 리드해 달라는 뜻이에요. 예를 들면 Jacoby 2NT의 답, Splinter, Drury, 큐비드, 4번째 수트, Blackwood 응답이에요. 그 수트가 좋을 때만 해요.",
+    auc: "1♥ – 패스 – [[4♣]] – X", title: "상대 인위적 비드에 리드 지시 X", cols: "상대 비드|예|내 비드|메모", chk: true,
+    rows: ["Stayman·Transfer|1NT – 2♣|X|♣ 리드", "Splinter|1♥ – 4♣|X|♣ 리드", "Drury|패스 – 1♠ – 2♣|X|♣ 리드",
+      "Jacoby 2NT 뒤 짧은 수트|1♠ – 2NT – 3♦|X|♦ 리드", "큐비드 (컨트롤)|… – 4♦|X|♦ 리드", "4번째 수트|1♣ – 1♥ – 1♠ – 2♦|X|♦ 리드",
+      "Blackwood 응답|4NT – 5♦|X|♦ 리드", "#X하지 않으면", "||패스|파트너는 다른 리드를 고름"] },
 
   /* ───────── 상대가 개입했을 때 ───────── */
   { id: "negx", cat: "comp", t: 1, face: "X", x: true, name: "네거티브 더블",
@@ -1086,7 +1117,14 @@ addRel("tox", "toxrebid", "toxint"); addRel("toxrebid", "tox", "toxint", "respon
 addRel("ntpenx", "capp", "landy", "mlandy"); addRel("capp", "ntpenx"); addRel("landy", "ntpenx");
 addRel("oprebx", "redbl", "jordan"); addRel("redbl", "oprebx"); addRel("jordan", "oprebx");
 addRel("negx", "negx2", "freebid"); addRel("negx2", "negx"); addRel("freebid", "negx", "nfb"); addRel("nfb", "freebid");
+addRel("overcall", "vsresp"); addRel("vsresp", "overcall", "tox", "sandwich", "u2nt", "michaels");
+addRel("vsstay", "leadx", "vsart", "stayman", "jacoby"); addRel("stayman", "vsstay"); addRel("jacoby", "vsstay");
+addRel("vsweaknt", "weaknt", "ntpenx", "dont", "capp"); addRel("weaknt", "vsweaknt"); addRel("ntpenx", "vsweaknt");
+addRel("delayed", "balance", "balraise"); addRel("balraise", "delayed");
+addRel("vsart", "leadx", "lightner", "vsstay"); addRel("leadx", "vsart", "vsstay");
 Object.assign(EN, {
+  vsresp: "intervention after response overcall", vsstay: "defense against stayman transfer lead directing double",
+  vsweaknt: "defense against weak notrump 12-14", delayed: "delayed overcall delayed double", vsart: "lead directing double artificial bid",
   vsweak2: "defense against weak two overcall double", vspre34: "defense against preempt 3 level 4 level",
   balraise: "balancing after raise reopen", ocrebid: "overcaller rebid", advrebid: "advancer rebid",
   advcomp: "advancer after interference", oc2adv: "two level overcall advancer", twosuitrb: "michaels unusual 2NT follow-up rebid",

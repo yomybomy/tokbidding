@@ -1,6 +1,6 @@
 /* 톡톡 비딩 오프라인 저장
    사이트를 고칠 때마다 VERSION 숫자를 올리면, 다음 실행 때 새 버전이 저장돼요. */
-const VERSION = "tok-v3";
+const VERSION = "tok-v4";
 const CORE = [
   "./",
   "./index.html",
