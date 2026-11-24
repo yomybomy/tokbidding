@@ -29,6 +29,17 @@
 - Transfer Walsh: 3–4장은 1레벨 수락, 2♥ = 17–19 Superaccept. Landy 5–4 이상. Cappelletti 2NT = 두 마이너.
 - Michaels · 언유주얼 2NT: 6–10 또는 17+, 11–16은 일반 오버콜로 시작.
 - 1NT 오버콜 15–17, 2레벨 오버콜 10–16.
+- 수비 쪽 (2026-11-24 결정, 경쟁 학습지 10개 비교):
+  - 테이크아웃 X 12–17, 강한 X 18+
+  - 오버콜 뒤 단순 레이즈 7–10, 어드밴서 2NT 12–14 / 3NT 15+, 어드밴서 점프 시프트 15+
+  - 오버콜러 강도 8–12 / 13–14 / 15–16
+  - 샌드위치: 패스 안 한 손 1NT 16–18, 패스한 손 1NT 두 수트 6–10
+  - 밸런싱 1NT 12–15, 점프 2NT 18–19
+  - BROMAD는 One-under, 더블 뒤 트랜스퍼 응답과 둘 중 하나만
+  - Jordan 2NT 4장 이상, 서포트 더블은 2♠까지
+  - 오버콜 뒤 응답자 새 수트는 포싱 기본(NFB는 선택 심화)
+  - 위크 투·Preempt·레이즈 뒤 밸런싱 수비는 학습지가 없어 표준 숫자 + 약속 확인 표시
+- 경쟁 학습지: 오버콜 통합 01 `DAHbN_J10sE` · 02 `DAHbNj5QYQs` · 03 `DAHad__Mmyo` · 수트 오버콜 뒤 비딩 `DAHWiD32e14` · Cue-bid 지지형 `DAHU3bt_Pe4` · 4차시 Overcaller·Advancer Rebid `DAHbtdTEotA` · Takeout Double·Responsive `DAHbJkd-Z00` · Redouble·상대 X 뒤 `DAHbr0ip9gw` · Negative·Reopening·Support `DAHbr68R0ps` · 상대 1NT 방어 `DAHawcz2QDQ`
 
 ## 용어·표현 원칙
 - "경매"가 아니라 **"비딩"**.
